@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 80" width="260" height="80">
+  <defs>
+    <linearGradient id="gMain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c6cfc"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer hex ring -->
+  <polygon points="40,4 62,17 62,43 40,56 18,43 18,17" fill="url(#gMain)" opacity="0.12"/>
+  <polygon points="40,4 62,17 62,43 40,56 18,43 18,17" fill="none" stroke="url(#gMain)" stroke-width="1.2"/>
+
+  <!-- Middle hex ring -->
+  <polygon points="40,12 56,21 56,39 40,48 24,39 24,21" fill="url(#gMain)" opacity="0.18"/>
+  <polygon points="40,12 56,21 56,39 40,48 24,39 24,21" fill="none" stroke="url(#gMain)" stroke-width="0.8"/>
+
+  <!-- Inner hex ring -->
+  <polygon points="40,20 52,27 52,41 40,48 28,41 28,27" fill="url(#gMain)" opacity="0.22"/>
+  <polygon points="40,20 52,27 52,41 40,48 28,41 28,27" fill="none" stroke="url(#gMain)" stroke-width="0.6"/>
+
+  <!-- Core filled hex -->
+  <polygon points="40,26 49,31 49,41 40,46 31,41 31,31" fill="url(#gMain)"/>
+
+  <!-- N letter -->
+  <text x="40" y="44" text-anchor="middle" font-family="'Syne', Arial Black, sans-serif" font-size="18" font-weight="800" fill="white">N</text>
+
+  <!-- Wordmark -->
+  <text x="76" y="38" font-family="'Syne', Arial Black, sans-serif" font-size="26" font-weight="800" fill="#f0f0f5">Nest</text>
+  <text x="148" y="38" font-family="'Syne', Arial Black, sans-serif" font-size="26" font-weight="800" fill="url(#gMain)">Toolz</text>
+
+  <!-- Tagline -->
+  <text x="76" y="54" font-family="'DM Sans', Arial, sans-serif" font-size="8.5" fill="#6060a0" letter-spacing="2">FREE ONLINE TOOLS</text>
+</svg>
