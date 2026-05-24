@@ -1,603 +1,531 @@
-/* ═══ IMAGE PREVIEW ═══ */
-function previewOriginal(){
-  const file = document.getElementById('img-file').files[0];
-  if(!file) return;
-  const wrap = document.getElementById('img-preview-wrap');
-  const preview = document.getElementById('img-preview');
-  const origSize = document.getElementById('img-orig-size');
-  preview.src = URL.createObjectURL(file);
-  wrap.style.display = 'block';
-  origSize.textContent = 'Original size: ' + (file.size/1024).toFixed(1) + ' KB  |  Type: ' + file.type;
-}
-
-/* ═══ EMI CALCULATOR ═══ */
-function calcEMI(){
-  const P = parseFloat(document.getElementById('emi-amount')?.value)||0;
-  const annualRate = parseFloat(document.getElementById('emi-rate')?.value)||0;
-  const months = parseFloat(document.getElementById('emi-months')?.value)||0;
-  if(P<=0||annualRate<=0||months<=0){showToast('⚠️ Please fill all fields!');return;}
-  const r = annualRate/(12*100);
-  const emi = P*r*Math.pow(1+r,months)/(Math.pow(1+r,months)-1);
-  const totalPay = emi*months;
-  const totalInt = totalPay-P;
-  const fmt = v=>'₹'+Math.round(v).toLocaleString('en-IN');
-  const res = document.getElementById('emi-result');
-  res.innerHTML=`<strong>📊 EMI Breakdown:</strong><br/><br/>
-    💸 <strong>Monthly EMI:</strong> <span style="color:var(--p2);font-size:1.15rem;font-weight:800">${fmt(emi)}</span><br/>
-    💰 <strong>Principal Amount:</strong> ${fmt(P)}<br/>
-    📈 <strong>Total Interest:</strong> <span style="color:var(--r)">${fmt(totalInt)}</span><br/>
-    🏦 <strong>Total Payment:</strong> <span style="color:var(--g)">${fmt(totalPay)}</span><br/>
-    📅 <strong>Tenure:</strong> ${months} months (${(months/12).toFixed(1)} years)`;
-  res.classList.add('show');
-}
-
-/* ═══ PDF MERGE ═══ */
-async function mergePDF(){
-  const files = document.getElementById('pdf-files')?.files;
-  if(!files||files.length<2){showToast('⚠️ Select at least 2 PDF files!');return;}
-  if(files.length>5){showToast('⚠️ Maximum 5 files allowed!');return;}
-  const btn = document.getElementById('merge-btn');
-  btn.disabled=true; btn.textContent='⏳ Merging...';
-  const res = document.getElementById('pdf-result');
-  try{
-    const {PDFDocument} = PDFLib;
-    const merged = await PDFDocument.create();
-    let totalPages=0;
-    const list = document.getElementById('pdf-file-list');
-    list.innerHTML='';
-    for(let i=0;i<files.length;i++){
-      const buf = await files[i].arrayBuffer();
-      const doc = await PDFDocument.load(buf);
-      const pages = await merged.copyPages(doc, doc.getPageIndices());
-      pages.forEach(p=>merged.addPage(p));
-      totalPages+=pages.length;
-      list.innerHTML+=`<div>✅ ${files[i].name} (${pages.length} page${pages.length>1?'s':''})</div>`;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="google-site-verification" content="UoQ1zgTSnykafDsNx6UnIfVRuXTsXv9TS5mxhjjWfOw" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NestToolz – Free Online Tools for Everyone</title>
+  <meta name="description" content="NestToolz provides 100% free online tools – PDF Merge, Image Compressor, QR Code Generator, EMI Calculator, Age Calculator, Base64 Encoder, GST Calculator, Loan Calculator and more."/>
+  <meta name="keywords" content="free online tools, PDF merge, image compressor, QR code generator, EMI calculator, password generator, word counter, WhatsApp link generator, age calculator, base64 encoder, GST calculator, loan calculator, invoice generator, character counter, JPG to PNG, PNG to JPG, YouTube thumbnail downloader, NestToolz"/>
+  <meta name="robots" content="index, follow"/>
+  <meta property="og:title" content="NestToolz – Free Online Tools"/>
+  <meta property="og:description" content="100% free online tools. No signup, no watermarks, no hidden charges."/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://nesttoolz.com"/>
+  <link rel="canonical" href="https://nesttoolz.com"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <style>
+    :root{
+      --bg:#07070f;--bg2:#0c0c18;--card:#10101e;--card2:#14142a;
+      --border:rgba(120,100,255,0.14);--bh:rgba(120,100,255,0.45);
+      --p:#7c6cfc;--p2:#c084fc;--acc:#22d3ee;--acc2:#38bdf8;
+      --g:#34d399;--y:#fbbf24;--r:#f87171;--pk:#f472b6;
+      --tx:#f0f0ff;--tx2:#94a3b8;--tx3:#475569;
     }
-    const bytes = await merged.save();
-    const blob = new Blob([bytes],{type:'application/pdf'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href=url; a.download='merged_nesttoolz.pdf';
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url),1000);
-    res.innerHTML=`<strong>✅ Merged Successfully!</strong><br/>Total pages: <strong>${totalPages}</strong><br/>Files merged: <strong>${files.length}</strong><br/><small style="color:var(--tx3)">File downloaded automatically ↑</small>`;
-    res.classList.add('show');
-    showToast('✅ PDFs merged & downloaded!');
-  }catch(e){
-    res.innerHTML=`<strong style="color:var(--r)">❌ Error:</strong> ${e.message}`;
-    res.classList.add('show');
-    showToast('❌ Merge failed!');
-  }
-  btn.disabled=false; btn.textContent='📄 Merge PDFs & Download';
-}
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;}
+    #bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+    nav{position:sticky;top:0;z-index:200;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 5%;background:rgba(7,7,15,0.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
+    .logo{display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;}
+    .logo-svg{width:130px;height:auto;display:block;}
+    .logo-dot{width:8px;height:8px;background:var(--g);border-radius:50%;animation:blink 2s infinite;flex-shrink:0;}
+    @keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+    .nav-links{display:flex;gap:28px;list-style:none;}
+    .nav-links a{color:var(--tx2);text-decoration:none;font-size:.88rem;font-weight:500;transition:color .2s;}
+    .nav-links a:hover{color:var(--tx);}
+    .nav-right{display:flex;align-items:center;gap:12px;}
+    .nav-search{background:rgba(255,255,255,.05);border:1.5px solid var(--border);border-radius:10px;padding:8px 14px 8px 36px;color:var(--tx);font-size:.85rem;font-family:inherit;outline:none;width:190px;transition:border-color .2s,width .3s;}
+    .nav-search:focus{border-color:var(--p);width:220px;}
+    .nav-search-wrap{position:relative;display:flex;align-items:center;}
+    .nav-search-wrap::before{content:'🔍';position:absolute;left:10px;font-size:.8rem;pointer-events:none;}
+    .nav-btn{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;border:none;padding:9px 20px;border-radius:10px;font-size:.84rem;font-weight:700;cursor:pointer;transition:opacity .2s,transform .2s;box-shadow:0 0 20px rgba(124,108,252,.35);white-space:nowrap;}
+    .nav-btn:hover{opacity:.88;transform:translateY(-1px);}
+    .hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px;}
+    .hamburger span{width:22px;height:2px;background:var(--tx2);border-radius:2px;transition:all .3s;}
+    .mobile-nav{position:fixed;top:66px;left:0;right:0;background:rgba(10,10,20,.98);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:20px 5%;z-index:199;transform:translateY(-110%);transition:transform .35s cubic-bezier(.19,1,.22,1);display:flex;flex-direction:column;gap:4px;}
+    .mobile-nav.open{transform:translateY(0);}
+    .mobile-nav a{color:var(--tx2);text-decoration:none;font-size:.95rem;font-weight:500;padding:12px 0;border-bottom:1px solid var(--border);transition:color .2s;}
+    .mobile-nav a:last-child{border-bottom:none;}
+    .mobile-nav a:hover{color:var(--p2);}
+    .mob-search{background:rgba(255,255,255,.05);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--tx);font-size:.9rem;font-family:inherit;outline:none;width:100%;margin-bottom:8px;}
+    .mob-search:focus{border-color:var(--p);}
+    .hero{position:relative;z-index:1;min-height:88vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:60px;padding:80px 5% 60px;max-width:1300px;margin:0 auto;}
+    .hero-left{animation:fadeUp .7s .05s ease both;}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(124,108,252,.1);border:1px solid rgba(124,108,252,.28);color:var(--p2);font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:6px 16px;border-radius:100px;margin-bottom:28px;}
+    .hero h1{font-size:clamp(2.2rem,5vw,4.2rem);font-weight:900;line-height:1.06;letter-spacing:-2px;margin-bottom:22px;}
+    .hero h1 .line2{background:linear-gradient(120deg,var(--p),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .hero-sub{font-size:1rem;color:var(--tx2);line-height:1.75;max-width:480px;margin-bottom:38px;}
+    .hero-sub strong{color:var(--tx);font-weight:600;}
+    .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:44px;}
+    .btn-p{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;border:none;padding:14px 32px;border-radius:12px;font-size:.97rem;font-weight:800;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 28px rgba(124,108,252,.4);display:flex;align-items:center;gap:8px;}
+    .btn-p:hover{transform:translateY(-3px);box-shadow:0 10px 40px rgba(124,108,252,.55);}
+    .btn-s{background:transparent;color:var(--tx);border:1.5px solid var(--border);padding:14px 32px;border-radius:12px;font-size:.97rem;font-weight:600;cursor:pointer;transition:all .2s;}
+    .btn-s:hover{border-color:var(--p);background:rgba(124,108,252,.07);}
+    .hero-proof{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+    .proof-avatars{display:flex;}
+    .proof-avatars span{width:32px;height:32px;border-radius:50%;border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-size:.85rem;margin-left:-8px;}
+    .proof-avatars span:first-child{margin-left:0;}
+    .proof-text{font-size:.82rem;color:var(--tx2);}
+    .proof-text strong{color:var(--tx);}
+    .hero-right{position:relative;animation:fadeUp .7s .2s ease both;}
+    #hero3d{width:100%;height:480px;border-radius:20px;display:block;border:1px solid var(--border);}
+    .hero-float-card{position:absolute;background:rgba(16,16,30,.95);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:.82rem;color:var(--tx2);box-shadow:0 8px 32px rgba(0,0,0,.5);animation:floatCard 3s ease-in-out infinite;z-index:2;}
+    .hero-float-card strong{color:var(--tx);}
+    .hero-float-card .fc-icon{font-size:1.3rem;}
+    .fc1{bottom:60px;left:-20px;animation-delay:0s;}
+    .fc2{top:50px;right:-10px;animation-delay:1.5s;}
+    @keyframes floatCard{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .stats-bar{position:relative;z-index:1;display:flex;justify-content:center;flex-wrap:wrap;background:rgba(12,12,24,.7);backdrop-filter:blur(16px);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+    .stat-item{padding:26px 52px;text-align:center;border-right:1px solid var(--border);}
+    .stat-item:last-child{border-right:none;}
+    .stat-num{font-size:1.8rem;font-weight:900;background:linear-gradient(120deg,var(--p),var(--p2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .stat-lbl{font-size:.73rem;color:var(--tx3);margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:1px;}
+    .ad-strip{position:relative;z-index:1;max-width:760px;margin:32px auto;background:rgba(124,108,252,.04);border:1px dashed rgba(124,108,252,.18);border-radius:14px;padding:14px 20px;text-align:center;color:var(--tx3);font-size:.78rem;}
+    .ad-strip small{display:block;font-size:.64rem;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;}
+    section{position:relative;z-index:1;padding:72px 5%;}
+    .sh{text-align:center;margin-bottom:48px;}
+    .sh-tag{display:inline-block;background:rgba(124,108,252,.08);border:1px solid rgba(124,108,252,.22);color:var(--p2);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;padding:5px 16px;border-radius:100px;margin-bottom:14px;}
+    .sh h2{font-size:clamp(1.6rem,3.5vw,2.6rem);font-weight:900;letter-spacing:-1px;margin-bottom:10px;}
+    .sh p{color:var(--tx2);font-size:.95rem;max-width:520px;margin:0 auto;line-height:1.7;}
+    .tools-search{max-width:480px;margin:0 auto 36px;position:relative;display:flex;align-items:center;}
+    .tools-search-icon{position:absolute;left:14px;font-size:1rem;pointer-events:none;}
+    .tools-search input{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:13px 14px 13px 42px;color:var(--tx);font-family:inherit;font-size:.9rem;outline:none;transition:border-color .2s;}
+    .tools-search input:focus{border-color:var(--p);}
+    .no-results{text-align:center;color:var(--tx3);font-size:.95rem;padding:40px;width:100%;}
+    .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;max-width:1200px;margin:0 auto;}
+    .tc{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:26px;cursor:pointer;position:relative;overflow:hidden;transition:transform .25s,border-color .25s,box-shadow .25s,background .25s;text-decoration:none;color:inherit;display:block;}
+    .tc::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(124,108,252,.12),transparent 70%);opacity:0;transition:opacity .3s;}
+    .tc:hover{transform:translateY(-6px);border-color:var(--bh);background:var(--card2);box-shadow:0 16px 48px rgba(124,108,252,.18);}
+    .tc:hover::after{opacity:1;}
+    .tc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .tc-icon{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:transform .25s;}
+    .tc:hover .tc-icon{transform:scale(1.12) rotate(-6deg);}
+    .tc-arrow{width:30px;height:30px;border-radius:50%;background:rgba(124,108,252,.1);display:flex;align-items:center;justify-content:center;color:var(--p2);font-size:.9rem;opacity:0;transform:translateX(-6px);transition:opacity .25s,transform .25s;}
+    .tc:hover .tc-arrow{opacity:1;transform:translateX(0);}
+    .tc h3{font-size:.98rem;font-weight:700;margin-bottom:8px;}
+    .tc p{font-size:.82rem;color:var(--tx2);line-height:1.6;margin-bottom:14px;}
+    .tc-tag{font-size:.67rem;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.8px;}
+    .tag-hot{background:rgba(251,191,36,.1);color:var(--y);}
+    .tag-free{background:rgba(52,211,153,.1);color:var(--g);}
+    .tag-new{background:rgba(192,132,252,.1);color:var(--p2);}
+    .tc::before{content:'';position:absolute;top:0;left:10%;width:80%;height:2px;background:linear-gradient(90deg,transparent,var(--p),transparent);opacity:0;transition:opacity .3s;}
+    .tc:hover::before{opacity:1;}
+    .tc.hidden{display:none;}
+    #home-view,#tool-view{transition:opacity .25s ease,transform .25s ease;}
+    #home-view.fade-out{opacity:0;transform:translateY(10px);pointer-events:none;}
+    #tool-view.fade-in{animation:fadeInUp .35s ease both;}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    #home-view{display:block;}
+    #tool-view{display:none;}
+    .tool-page{background:var(--bg);min-height:100vh;}
+    .tp-nav{position:sticky;top:0;z-index:10;background:rgba(7,7,15,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 5%;height:62px;display:flex;align-items:center;justify-content:space-between;}
+    .tp-back{display:flex;align-items:center;gap:8px;background:none;border:1.5px solid var(--border);color:var(--tx2);padding:7px 16px;border-radius:8px;font-size:.84rem;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;}
+    .tp-back:hover{border-color:var(--p);color:var(--p2);}
+    .tp-nav-logo{width:110px;height:auto;cursor:pointer;}
+    .tp-body{max-width:1100px;margin:0 auto;padding:40px 5% 80px;display:grid;grid-template-columns:1fr 320px;gap:36px;}
+    .tp-header{margin-bottom:28px;}
+    .tp-icon-wrap{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin-bottom:16px;}
+    .tp-header h1{font-size:1.9rem;font-weight:900;letter-spacing:-1px;margin-bottom:8px;}
+    .tp-header p{color:var(--tx2);font-size:.93rem;line-height:1.7;}
+    .tp-breadcrumb{display:flex;align-items:center;gap:8px;font-size:.76rem;color:var(--tx3);margin-bottom:20px;flex-wrap:wrap;}
+    .tp-breadcrumb a{color:var(--tx3);text-decoration:none;transition:color .2s;}
+    .tp-breadcrumb a:hover{color:var(--p2);}
+    .tp-breadcrumb .current{color:var(--p2);font-weight:600;}
+    .tp-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px;margin-bottom:20px;}
+    .tp-card h3{font-size:.95rem;font-weight:700;margin-bottom:18px;color:var(--p2);}
+    .fi label{display:block;font-size:.81rem;font-weight:600;color:var(--tx2);margin-bottom:7px;}
+    .fi input[type=text],.fi input[type=number],.fi input[type=email],.fi textarea,.fi select{width:100%;background:rgba(255,255,255,.04);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--tx);font-family:inherit;font-size:.88rem;outline:none;transition:border-color .2s;margin-bottom:14px;}
+    .fi input[type=text]:focus,.fi input[type=number]:focus,.fi input[type=email]:focus,.fi textarea:focus,.fi select:focus{border-color:var(--p);}
+    .fi textarea{resize:vertical;min-height:110px;}
+    .fi input[type=file]{width:100%;background:rgba(255,255,255,.03);border:1.5px dashed var(--border);border-radius:10px;padding:20px;color:var(--tx2);font-family:inherit;font-size:.85rem;margin-bottom:14px;cursor:pointer;text-align:center;transition:border-color .2s;}
+    .fi input[type=file]:hover{border-color:var(--p);}
+    .fi-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .fi-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+    .run-btn{width:100%;background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;border:none;padding:13px;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;transition:opacity .2s,transform .2s;margin-top:4px;}
+    .run-btn:hover{opacity:.9;transform:translateY(-1px);}
+    .run-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+    .result-box{margin-top:18px;background:rgba(124,108,252,.07);border:1.5px solid rgba(124,108,252,.2);border-radius:12px;padding:16px;font-size:.88rem;line-height:1.8;display:none;}
+    .result-box.show{display:block;}
+    .result-box strong{color:var(--p2);}
+    .cbtn{background:transparent;border:1.5px solid var(--border);color:var(--tx2);padding:8px 18px;border-radius:8px;font-size:.77rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:10px;}
+    .cbtn:hover{border-color:var(--p);color:var(--p2);}
+    #qr-output{margin-top:14px;text-align:center;display:none;}
+    #qr-output.show{display:block;}
+    #qr-canvas{border-radius:12px;background:#fff;padding:10px;}
+    .tp-url-chip{display:inline-flex;align-items:center;gap:8px;background:rgba(124,108,252,.08);border:1px solid rgba(124,108,252,.2);border-radius:8px;padding:4px 12px;font-size:.7rem;font-family:monospace;color:var(--p2);margin-bottom:18px;}
+    .sidebar-ad{background:rgba(124,108,252,.05);border:1px dashed rgba(124,108,252,.18);border-radius:14px;padding:16px;text-align:center;color:var(--tx3);font-size:.74rem;margin-bottom:18px;}
+    .sidebar-ad small{display:block;font-size:.61rem;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;}
+    .related-tools h4{font-size:.78rem;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;}
+    .rel-tool{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 15px;cursor:pointer;margin-bottom:10px;transition:all .2s;color:var(--tx);text-decoration:none;}
+    .rel-tool:hover{border-color:var(--bh);background:var(--card2);transform:translateX(4px);}
+    .rel-tool .rel-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+    .rel-tool-info h5{font-size:.84rem;font-weight:700;margin-bottom:2px;}
+    .rel-tool-info p{font-size:.73rem;color:var(--tx3);}
+    .rel-tool-arrow{margin-left:auto;color:var(--tx3);font-size:.8rem;}
+    .progress-wrap{width:100%;background:rgba(255,255,255,.06);border-radius:100px;height:6px;margin:10px 0;}
+    .progress-bar{height:6px;border-radius:100px;background:linear-gradient(90deg,var(--p),var(--p2));transition:width .4s ease;}
+    .why-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px;max-width:1100px;margin:0 auto;}
+    .why-c{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;transition:transform .25s,border-color .25s;}
+    .why-c:hover{transform:translateY(-4px);border-color:var(--bh);}
+    .why-ic{font-size:2rem;margin-bottom:12px;}
+    .why-c h4{font-size:.9rem;font-weight:700;margin-bottom:8px;}
+    .why-c p{font-size:.79rem;color:var(--tx2);line-height:1.6;}
+    .blog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px;max-width:1150px;margin:0 auto;}
+    .blog-c{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .25s,box-shadow .25s;}
+    .blog-c:hover{transform:translateY(-5px);box-shadow:0 14px 40px rgba(0,0,0,.4);}
+    .blog-thumb{height:120px;display:flex;align-items:center;justify-content:center;font-size:3rem;}
+    .blog-body{padding:20px;}
+    .blog-meta{font-size:.69rem;color:var(--tx3);font-weight:600;margin-bottom:7px;text-transform:uppercase;letter-spacing:.8px;}
+    .blog-body h4{font-size:.9rem;font-weight:700;margin-bottom:7px;line-height:1.4;}
+    .blog-body p{font-size:.79rem;color:var(--tx2);line-height:1.6;}
+    .read-more{display:inline-block;margin-top:10px;font-size:.77rem;font-weight:700;color:var(--p2);text-decoration:none;}
+    /* SHARE BUTTONS */
+    .share-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);}
+    .share-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;font-size:.78rem;font-weight:700;cursor:pointer;border:none;text-decoration:none;transition:opacity .2s,transform .2s;}
+    .share-btn:hover{opacity:.85;transform:translateY(-2px);}
+    .share-wa{background:#25D366;color:#fff;}
+    .share-tw{background:#1DA1F2;color:#fff;}
+    .share-cp{background:rgba(124,108,252,.15);border:1.5px solid rgba(124,108,252,.35);color:var(--p2);}
+    /* HOW TO USE / BENEFITS / FAQ CARDS */
+    .info-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px;margin-bottom:20px;}
+    .info-card h3{font-size:.95rem;font-weight:700;margin-bottom:16px;color:var(--p2);}
+    .info-card ol,.info-card ul{margin-left:18px;color:var(--tx2);font-size:.87rem;line-height:2.1;}
+    .info-card li{margin-bottom:2px;}
+    .faq-item{margin-bottom:14px;background:rgba(124,108,252,.04);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+    .faq-q{font-size:.88rem;font-weight:700;color:var(--tx);margin-bottom:6px;}
+    .faq-a{font-size:.83rem;color:var(--tx2);line-height:1.75;}
+    /* INVOICE TABLE */
+    .inv-table{width:100%;border-collapse:collapse;font-size:.82rem;margin-bottom:10px;}
+    .inv-table th{background:rgba(124,108,252,.1);color:var(--p2);font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:8px 10px;text-align:left;}
+    .inv-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--tx2);}
+    .inv-table input{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--tx);font-family:inherit;font-size:.82rem;width:100%;outline:none;}
+    .inv-table input:focus{border-color:var(--p);}
+    footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:52px 5% 28px;background:rgba(7,7,15,.9);}
+    .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;max-width:1100px;margin:0 auto 36px;}
+    .footer-brand p{margin-top:12px;font-size:.82rem;color:var(--tx3);line-height:1.7;}
+    .footer-logo{width:130px;height:auto;}
+    .fc h5{font-size:.8rem;font-weight:800;margin-bottom:14px;text-transform:uppercase;letter-spacing:1.2px;color:var(--tx2);}
+    .fc a{display:block;color:var(--tx3);text-decoration:none;font-size:.79rem;margin-bottom:9px;transition:color .2s;}
+    .fc a:hover{color:var(--p2);}
+    .footer-bottom{border-top:1px solid var(--border);padding-top:22px;text-align:center;font-size:.77rem;color:var(--tx3);max-width:1100px;margin:0 auto;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease;}
+    .reveal.vis{opacity:1;transform:translateY(0);}
+    .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px 22px;font-size:.85rem;color:var(--tx);z-index:9999;transition:transform .4s cubic-bezier(.19,1,.22,1);box-shadow:0 8px 32px rgba(0,0,0,.5);}
+    .toast.show{transform:translateX(-50%) translateY(0);}
+    @media(max-width:1024px){.tp-body{grid-template-columns:1fr;}.tp-sidebar{display:grid;grid-template-columns:1fr 1fr;gap:20px;}}
+    @media(max-width:960px){.hero{grid-template-columns:1fr;min-height:auto;padding:60px 5% 40px;}.hero-right{display:none;}.nav-search-wrap{display:none;}.nav-links{display:none;}.hamburger{display:flex;}.footer-grid{grid-template-columns:1fr 1fr;}}
+    @media(max-width:640px){.stat-item{padding:16px 20px;border-right:none;border-bottom:1px solid var(--border);}.stat-item:last-child{border-bottom:none;}.fi-row{grid-template-columns:1fr;}.fi-row3{grid-template-columns:1fr;}.footer-grid{grid-template-columns:1fr;}.tp-sidebar{grid-template-columns:1fr;}.fc1,.fc2{display:none;}.hero-ctas{flex-direction:column;}.btn-p,.btn-s{width:100%;justify-content:center;}.share-row{flex-direction:column;}}
+  </style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="toast" id="toast"></div>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="gNest" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c6cfc"/><stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+  </defs>
+</svg>
 
-/* ═══ PDF COMPRESS ═══ */
-async function compressPDF(){
-  const file = document.getElementById('pdf-comp-file')?.files[0];
-  if(!file){showToast('⚠️ Please select a PDF file!');return;}
-  const btn = document.getElementById('compress-btn');
-  btn.disabled=true; btn.textContent='⏳ Compressing...';
-  const res = document.getElementById('comp-result');
-  try{
-    const {PDFDocument} = PDFLib;
-    const buf = await file.arrayBuffer();
-    const doc = await PDFDocument.load(buf,{ignoreEncryption:true});
-    const level = document.getElementById('comp-level')?.value||'medium';
-    const opts = {useObjectStreams:true};
-    if(level==='high') opts.addDefaultPage=false;
-    const bytes = await doc.save(opts);
-    const origKB=(file.size/1024).toFixed(1);
-    const newKB=(bytes.byteLength/1024).toFixed(1);
-    const saved=((1-bytes.byteLength/file.size)*100).toFixed(0);
-    const blob=new Blob([bytes],{type:'application/pdf'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url; a.download=file.name.replace('.pdf','_compressed.pdf');
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url),1000);
-    res.innerHTML=`<strong>✅ Compressed!</strong><br/>Original: <strong>${origKB} KB</strong><br/>Compressed: <strong>${newKB} KB</strong><br/>Saved: <strong style="color:var(--g)">${saved}%</strong><br/><small style="color:var(--tx3)">File downloaded automatically ↑</small>`;
-    res.classList.add('show');
-    showToast('✅ PDF compressed & downloaded!');
-  }catch(e){
-    res.innerHTML=`<strong style="color:var(--r)">❌ Error:</strong> ${e.message}`;
-    res.classList.add('show');
-    showToast('❌ Compression failed!');
-  }
-  btn.disabled=false; btn.textContent='🗜️ Compress PDF & Download';
-}
-
-/* ═══ IMAGE COMPRESSOR ═══ */
-function compressImage(){
-  const file = document.getElementById('img-file')?.files[0];
-  if(!file){showToast('⚠️ Please select an image!');return;}
-  const quality = parseInt(document.getElementById('img-quality')?.value||'72')/100;
-  const canvas = document.getElementById('img-canvas');
-  const res = document.getElementById('img-result');
-  const img = new Image();
-  img.onload=function(){
-    canvas.width=img.naturalWidth;
-    canvas.height=img.naturalHeight;
-    const ctx=canvas.getContext('2d');
-    ctx.drawImage(img,0,0);
-    const isPng = file.type==='image/png';
-    const mimeType = isPng?'image/png':'image/jpeg';
-    canvas.toBlob(blob=>{
-      if(!blob){showToast('❌ Compression failed!');return;}
-      const origKB=(file.size/1024).toFixed(1);
-      const newKB=(blob.size/1024).toFixed(1);
-      const saved=(((file.size-blob.size)/file.size)*100).toFixed(0);
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      const ext=isPng?'png':'jpg';
-      a.href=url; a.download=file.name.replace(/\.[^.]+$/,'')+'_compressed.'+ext;
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a);
-      setTimeout(()=>URL.revokeObjectURL(url),1000);
-      res.innerHTML=`<strong>✅ Compressed!</strong><br/>Original: <strong>${origKB} KB</strong><br/>Compressed: <strong>${newKB} KB</strong><br/>Saved: <strong style="color:var(--g)">${saved}%</strong><br/><small style="color:var(--tx3)">File downloaded automatically ↑</small>`;
-      res.classList.add('show');
-      showToast('✅ Image compressed & downloaded!');
-    }, mimeType, isPng?undefined:quality);
-  };
-  img.src=URL.createObjectURL(file);
-}
-
-/* ═══ QR CODE GENERATOR ═══ */
-let qrInstance=null;
-function generateQR(){
-  const text=document.getElementById('qr-text')?.value||'https://nesttoolz.vercel.app';
-  const size=parseInt(document.getElementById('qr-size')?.value||'256');
-  const color=document.getElementById('qr-color')?.value||'#000000';
-  const container=document.getElementById('qr-container');
-  if(!container)return;
-  container.innerHTML='';
-  try{
-    qrInstance=new QRCode(container,{
-      text:text||'https://nesttoolz.vercel.app',
-      width:size, height:size,
-      colorDark:color, colorLight:'#ffffff',
-      correctLevel:QRCode.CorrectLevel.H
-    });
-  }catch(e){container.innerHTML='<p style="color:var(--r);font-size:.8rem">❌ Error generating QR</p>';}
-}
-
-function downloadQR(type){
-  const container=document.getElementById('qr-container');
-  if(!container){showToast('⚠️ Generate QR first!');return;}
-  const canvas=container.querySelector('canvas');
-  const img=container.querySelector('img');
-  let dataUrl='';
-  if(canvas) dataUrl=canvas.toDataURL(type==='jpg'?'image/jpeg':'image/png');
-  else if(img) dataUrl=img.src;
-  else{showToast('⚠️ QR not ready yet!');return;}
-  const a=document.createElement('a');
-  a.href=dataUrl; a.download='qrcode_nesttoolz.'+type;
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  showToast('✅ QR Code downloaded!');
-}
-
-/* ═══ WORD COUNTER ═══ */
-function countWords(){
-  const text=document.getElementById('wc-text')?.value||'';
-  const words=text.trim()===''?0:text.trim().split(/\s+/).length;
-  const chars=text.length;
-  const sentences=text.trim()===''?0:(text.match(/[^.!?]+[.!?]+/g)||[]).length;
-  const readTime=Math.ceil(words/200);
-  const el_w=document.getElementById('wc-words');
-  const el_c=document.getElementById('wc-chars');
-  const el_s=document.getElementById('wc-sents');
-  const el_t=document.getElementById('wc-time');
-  if(el_w)el_w.textContent=words;
-  if(el_c)el_c.textContent=chars;
-  if(el_s)el_s.textContent=sentences;
-  if(el_t)el_t.textContent=readTime<1?'<1 min':readTime+' min';
-}
-
-/* ═══ TIME AGO HELPER ═══ */
-function timeAgo(ts){
-  const secs = Math.floor((Date.now() - ts) / 1000);
-  if(secs < 5)  return 'just now';
-  if(secs < 60) return secs + 's ago';
-  const mins = Math.floor(secs / 60);
-  if(mins < 60) return mins + ' min ago';
-  const hrs = Math.floor(mins / 60);
-  if(hrs < 24)  return hrs + ' hr ago';
-  return Math.floor(hrs / 24) + 'd ago';
-}
-
-/* ═══ PASSWORD HISTORY ═══ */
-let passHistory = [];
-let pinnedPasses = new Set();
-
-function addToPassHistory(pass){
-  const unpinned = passHistory.filter(p => !p.pinned && p.pass !== pass);
-  const pinned   = passHistory.filter(p => p.pinned);
-  const newEntry = { pass, pinned: false, ts: Date.now() };
-  const maxUnpinned = Math.max(1, 5 - pinned.length);
-  passHistory = [...pinned, newEntry, ...unpinned].slice(0, pinned.length + maxUnpinned);
-  renderPassHistory();
-}
-
-function renderPassHistory(){
-  const panel = document.getElementById('pass-history-panel');
-  const list  = document.getElementById('pass-history-list');
-  if(!panel || !list) return;
-  if(!passHistory.length){ panel.style.display = 'none'; return; }
-  panel.style.display = 'block';
-  const hasUnpinned = passHistory.some(p => !p.pinned);
-  list.innerHTML = passHistory.map((item, i) => `
-    <div style="display:flex;flex-direction:column;gap:4px;padding:7px 8px;border-radius:8px;
-         background:${item.pinned ? 'rgba(251,191,36,.06)' : 'rgba(255,255,255,.03)'};
-         border:1px solid ${item.pinned ? 'rgba(251,191,36,.3)' : 'rgba(120,100,255,.1)'};
-         transition:background .2s,border-color .2s">
-      <div style="display:flex;align-items:center;gap:6px">
-        ${item.pinned ? '<span style="font-size:.75rem;flex-shrink:0" title="Pinned">📌</span>' : ''}
-        <span style="font-family:monospace;font-size:.78rem;color:var(--tx2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${item.pass}</span>
-        <span style="font-size:.68rem;color:var(--tx3);flex-shrink:0;white-space:nowrap">🕐 ${timeAgo(item.ts)}</span>
+<!-- ═══════════ HOME VIEW ═══════════ -->
+<div id="home-view">
+  <nav>
+    <a class="logo" href="/" onclick="navigateHome(event)">
+      <span class="logo-dot"></span>
+      <svg class="logo-svg" viewBox="0 0 220 56" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="gL" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7c6cfc"/><stop offset="100%" stop-color="#c084fc"/></linearGradient></defs>
+        <polygon points="28,3 46,13 46,33 28,43 10,33 10,13" fill="url(#gL)" opacity="0.13"/>
+        <polygon points="28,3 46,13 46,33 28,43 10,33 10,13" fill="none" stroke="url(#gL)" stroke-width="1.2"/>
+        <polygon points="28,10 42,18 42,32 28,40 14,32 14,18" fill="url(#gL)" opacity="0.2"/>
+        <polygon points="28,17 38,23 38,33 28,39 18,33 18,23" fill="url(#gL)" opacity="0.28"/>
+        <polygon points="28,22 35,26 35,34 28,38 21,34 21,26" fill="url(#gL)"/>
+        <text x="28" y="35" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="white">N</text>
+        <text x="58" y="31" font-family="'Syne','Inter',Arial Black,sans-serif" font-size="22" font-weight="800" fill="#f0f0f5">Nest</text>
+        <text x="112" y="31" font-family="'Syne','Inter',Arial Black,sans-serif" font-size="22" font-weight="800" fill="url(#gL)">Toolz</text>
+        <text x="58" y="43" font-family="'Inter',Arial,sans-serif" font-size="7.5" fill="#6060a0" letter-spacing="2">FREE ONLINE TOOLS</text>
+      </svg>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#tools">All Tools</a></li>
+      <li><a href="#why">Why Us</a></li>
+      <li><a href="/blog" onclick="navigatePage(event,'blog-home')">Blog</a></li>
+      <li><a href="/about" onclick="navigatePage(event,'about')">About Us</a></li>
+      <li><a href="/contact" onclick="navigatePage(event,'contact')">Contact</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="nav-search-wrap">
+        <input class="nav-search" type="text" placeholder="Search tools..." oninput="filterTools(this.value)" id="nav-search-input"/>
       </div>
-      <div style="display:flex;gap:5px;justify-content:flex-end">
-        <button onclick="togglePinPass(${i})" title="${item.pinned ? 'Unpin' : 'Pin to top'}"
-          style="background:${item.pinned ? 'rgba(251,191,36,.15)' : 'rgba(255,255,255,.05)'};
-                 border:1px solid ${item.pinned ? 'rgba(251,191,36,.4)' : 'rgba(255,255,255,.1)'};
-                 color:${item.pinned ? 'var(--y)' : 'var(--tx3)'};
-                 padding:3px 8px;border-radius:6px;font-size:.8rem;cursor:pointer;flex-shrink:0;transition:all .2s">
-          ${item.pinned ? '🔒' : '🔓'}
-        </button>
-        <button onclick="useHistoryPass(${i})" style="background:rgba(124,108,252,.12);border:1px solid rgba(124,108,252,.28);color:var(--p2);padding:3px 10px;border-radius:6px;font-size:.7rem;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">Use</button>
-        <button onclick="copyHistoryPass(${i})" style="background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:var(--g);padding:3px 10px;border-radius:6px;font-size:.7rem;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">Copy</button>
+      <button class="nav-btn" onclick="document.getElementById('tools').scrollIntoView({behavior:'smooth'})">⚡ All Tools</button>
+      <button class="hamburger" id="ham-btn" onclick="toggleMobileNav()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="mobile-nav" id="mobile-nav">
+    <input class="mob-search" type="text" placeholder="🔍 Search tools..." oninput="filterTools(this.value);toggleMobileNav()"/>
+    <a href="#tools" onclick="toggleMobileNav()">⚙️ All Tools</a>
+    <a href="#why" onclick="toggleMobileNav()">💎 Why NestToolz</a>
+    <a href="/blog" onclick="navigatePage(event,'blog-home');toggleMobileNav()">📖 Blog</a>
+    <a href="/about" onclick="navigatePage(event,'about');toggleMobileNav()">👋 About Us</a>
+    <a href="/contact" onclick="navigatePage(event,'contact');toggleMobileNav()">📬 Contact</a>
+    <a href="/privacy" onclick="navigatePage(event,'privacy');toggleMobileNav()">🔒 Privacy Policy</a>
+  </div>
+
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-badge">✦ 17 Free Tools — No Signup Needed</div>
+      <h1>Stop paying for<br/><span class="line2">simple online tools.</span></h1>
+      <p class="hero-sub">PDF merge, image compress, QR codes, EMI calculator, GST, invoices &amp; more — <strong>all 100% free</strong>, no watermarks, no login, works on any device.</p>
+      <div class="hero-ctas">
+        <button class="btn-p" onclick="document.getElementById('tools').scrollIntoView({behavior:'smooth'})">⚡ Try All Tools Free</button>
+        <button class="btn-s" onclick="document.getElementById('blog').scrollIntoView({behavior:'smooth'})">📚 Read Guides</button>
       </div>
-    </div>`).join('') + (hasUnpinned ? `
-  <div style="margin-top:8px;text-align:right">
-    <button onclick="clearUnpinnedHistory()"
-      style="background:rgba(248,113,113,.08);border:1.5px solid rgba(248,113,113,.25);color:var(--r);
-             padding:5px 14px;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;
-             transition:background .2s,border-color .2s"
-      onmouseover="this.style.background='rgba(248,113,113,.16)';this.style.borderColor='rgba(248,113,113,.5)'"
-      onmouseout="this.style.background='rgba(248,113,113,.08)';this.style.borderColor='rgba(248,113,113,.25)'">
-      🗑️ Clear Unpinned
-    </button>
-  </div>` : '');
-}
-
-function togglePinPass(idx){
-  if(!passHistory[idx]) return;
-  passHistory[idx].pinned = !passHistory[idx].pinned;
-  passHistory = [
-    ...passHistory.filter(p => p.pinned),
-    ...passHistory.filter(p => !p.pinned)
-  ];
-  renderPassHistory();
-  showToast(passHistory[idx]?.pinned ? '📌 Password pinned to top!' : '🔓 Password unpinned!');
-}
-
-function clearUnpinnedHistory(){
-  passHistory = passHistory.filter(p => p.pinned);
-  renderPassHistory();
-  showToast('🗑️ Unpinned history cleared!');
-}
-
-function togglePassHistory(){
-  const list  = document.getElementById('pass-history-list');
-  const arrow = document.getElementById('pass-history-arrow');
-  if(!list) return;
-  const collapsed = list.style.display === 'none';
-  list.style.display  = collapsed ? 'flex'  : 'none';
-  if(arrow) arrow.style.transform = collapsed ? 'rotate(0deg)' : 'rotate(-90deg)';
-}
-
-function useHistoryPass(idx){
-  const item = passHistory[idx];
-  if(!item) return;
-  const el = document.getElementById('pass-output');
-  if(el) el.value = item.pass;
-  updateStrength(item.pass);
-  showToast('✅ Password restored from history!');
-}
-
-function copyHistoryPass(idx){
-  const item = passHistory[idx];
-  if(!item) return;
-  navigator.clipboard.writeText(item.pass).then(() => showToast('📋 Copied from history!')).catch(() => showToast('❌ Copy failed'));
-}
-
-/* ═══ PASSWORD GENERATOR ═══ */
-function genPass(){
-  const passField = document.getElementById('pass-output');
-  if(passField && !passField._regenListenerAdded){
-    passField.addEventListener('keydown', function(e){
-      if(e.key === ' ' || e.key === 'Enter'){
-        e.preventDefault();
-        genPass();
-      }
-    });
-    passField._regenListenerAdded = true;
-  }
-  const len=parseInt(document.getElementById('pass-len')?.value||'16');
-  const useUpper=document.getElementById('pass-upper')?.checked!==false;
-  const useLower=document.getElementById('pass-lower')?.checked!==false;
-  const useNums=document.getElementById('pass-nums')?.checked!==false;
-  const useSyms=document.getElementById('pass-syms')?.checked||false;
-  let chars='';
-  if(useUpper)chars+='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  if(useLower)chars+='abcdefghijklmnopqrstuvwxyz';
-  if(useNums)chars+='0123456789';
-  if(useSyms)chars+='!@#$%^&*()_+-=[]{}|;:,.<>?';
-  if(!chars){showToast('⚠️ Select at least one character type!');return;}
-  const arr=new Uint32Array(len);
-  crypto.getRandomValues(arr);
-  let pass='';
-  for(let i=0;i<len;i++) pass+=chars[arr[i]%chars.length];
-  const el=document.getElementById('pass-output');
-  if(el) el.value=pass;
-  updateStrength(pass);
-  addToPassHistory(pass);
-  const autoCopy=document.getElementById('pass-auto-copy');
-  if(autoCopy?.checked && pass){
-    navigator.clipboard.writeText(pass).then(()=>{
-      showCopiedBadge();
-    }).catch(()=>{
-      if(el){ el.type='text'; el.select(); document.execCommand('copy'); el.type='password'; showCopiedBadge(); }
-    });
-  }
-}
-
-function updateStrength(p){
-  let score=0;
-  if(p.length>=8)score++;
-  if(p.length>=12)score++;
-  if(/[A-Z]/.test(p))score++;
-  if(/[a-z]/.test(p))score++;
-  if(/[0-9]/.test(p))score++;
-  if(/[^a-zA-Z0-9]/.test(p))score++;
-  const labels=['','Very Weak','Weak','Fair','Good','Strong','Very Strong'];
-  const colors=['','var(--r)','var(--r)','var(--y)','var(--y)','var(--g)','var(--g)'];
-  const el=document.getElementById('pass-strength');
-  if(el){el.textContent='Strength: '+labels[score];el.style.color=colors[score];}
-  const bar=document.getElementById('pass-strength-bar');
-  if(bar){bar.style.width=((score/6)*100)+'%';bar.style.background=colors[score];bar.style.transition='width 0.4s ease, background 0.4s ease';}
-}
-
-function copyPass(){
-  const el=document.getElementById('pass-output');
-  if(!el?.value){showToast('⚠️ Generate a password first!');return;}
-  const prevType=el.type;
-  el.type='text';
-  el.select();
-  el.setSelectionRange(0,99999);
-  navigator.clipboard.writeText(el.value).then(()=>{
-    el.type=prevType;
-    showCopiedBadge();
-    showToast('📋 Password copied!');
-  }).catch(()=>{
-    document.execCommand('copy');
-    el.type=prevType;
-    showCopiedBadge();
-    showToast('📋 Password copied!');
-  });
-}
-
-function togglePassVisibility(){
-  const el=document.getElementById('pass-output');
-  const btn=document.getElementById('pass-eye-btn');
-  if(!el)return;
-  const isHidden=el.type==='password';
-  el.type=isHidden?'text':'password';
-  if(btn) btn.textContent=isHidden?'🙈':'👁️';
-}
-
-function showCopiedBadge(){
-  const badge=document.getElementById('pass-copied-badge');
-  if(!badge)return;
-  badge.style.opacity='1';
-  badge.style.transform='translateY(0)';
-  clearTimeout(badge._t);
-  badge._t=setTimeout(()=>{
-    badge.style.opacity='0';
-    badge.style.transform='translateY(-6px)';
-  },1800);
-}
-
-/* ═══ WHATSAPP LINK GENERATOR ═══ */
-function genWALink(){
-  const phone=document.getElementById('wa-phone')?.value?.replace(/\D/g,'')||'';
-  const msg=document.getElementById('wa-msg')?.value||'';
-  if(!phone){showToast('⚠️ Enter a phone number!');return;}
-  const link=`https://wa.me/${phone}${msg?'?text='+encodeURIComponent(msg):''}`;
-  const out=document.getElementById('wa-output');
-  const linkEl=document.getElementById('wa-link-text');
-  if(linkEl) linkEl.textContent=link;
-  if(out) out.classList.add('show');
-}
-
-function copyWALink(){
-  const el=document.getElementById('wa-link-text');
-  if(!el?.textContent){showToast('⚠️ Generate a link first!');return;}
-  navigator.clipboard.writeText(el.textContent).then(()=>showToast('🔗 WhatsApp link copied!')).catch(()=>showToast('❌ Copy failed'));
-}
-
-/* ═══ TOAST ═══ */
-function showToast(msg){
-  const t=document.getElementById('toast');
-  if(!t)return;
-  t.textContent=msg;
-  t.classList.add('show');
-  clearTimeout(t._timer);
-  t._timer=setTimeout(()=>t.classList.remove('show'),3000);
-}
-
-/* ═══ TOOLS GRID ═══ */
-function renderToolsGrid(filter){
-  const grid=document.getElementById('tools-grid');
-  if(!grid)return;
-  const q=(filter||'').toLowerCase().trim();
-  const filtered=q?TOOLS.filter(t=>t.name.toLowerCase().includes(q)||t.desc.toLowerCase().includes(q)):TOOLS;
-  if(!filtered.length){
-    grid.innerHTML='<div class="no-results">🔍 No tools found for "'+filter+'".<br/>Try "PDF", "QR", "EMI" etc.</div>';
-    return;
-  }
-  grid.innerHTML=filtered.map(t=>`
-    <a class="tc" href="/tools/${t.slug}" onclick="navigateTo(event,'${t.id}')">
-      <div class="tc-top">
-        <div class="tc-icon" style="background:${t.color};border:1px solid ${t.border}">${t.icon}</div>
-        <span class="tc-tag tag-${t.tag}">${t.tag==='hot'?'🔥 Hot':t.tag==='new'?'✨ New':'✅ Free'}</span>
-        <div class="tc-arrow">→</div>
+      <div class="hero-proof">
+        <div class="proof-avatars">
+          <span style="background:#2d1b69">👩</span><span style="background:#0d3d2d">👨</span>
+          <span style="background:#3d0d1e">👩‍💼</span><span style="background:#1a2d3d">👨‍💻</span>
+          <span style="background:#2e2a1a">🧑</span>
+        </div>
+        <p class="proof-text">Trusted by <strong>50,000+</strong> users monthly ⭐⭐⭐⭐⭐</p>
       </div>
-      <h3>${t.name}</h3>
-      <p>${t.desc}</p>
-    </a>`).join('');
-}
+    </div>
+    <div class="hero-right">
+      <canvas id="hero3d"></canvas>
+      <div class="hero-float-card fc1"><span class="fc-icon">✅</span><div><strong>GST Calculated!</strong><br/>₹1,800 Tax</div></div>
+      <div class="hero-float-card fc2"><span class="fc-icon">🖼️</span><div><strong>Image Compressed</strong><br/>Saved 78%</div></div>
+    </div>
+  </div>
 
-function filterTools(q){
-  renderToolsGrid(q);
-  const navInput=document.getElementById('nav-search-input');
-  const toolInput=document.getElementById('tools-search-input');
-  if(navInput&&document.activeElement!==navInput)navInput.value=q;
-  if(toolInput&&document.activeElement!==toolInput)toolInput.value=q;
-}
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num">17+</div><div class="stat-lbl">Free Tools</div></div>
+    <div class="stat-item"><div class="stat-num">50K+</div><div class="stat-lbl">Monthly Users</div></div>
+    <div class="stat-item"><div class="stat-num">2L+</div><div class="stat-lbl">Tasks Done</div></div>
+    <div class="stat-item"><div class="stat-num">0₹</div><div class="stat-lbl">Forever Free</div></div>
+  </div>
 
-/* ═══ MOBILE NAV ═══ */
-function toggleMobileNav(){
-  const nav=document.getElementById('mobile-nav');
-  const ham=document.getElementById('ham-btn');
-  if(!nav)return;
-  nav.classList.toggle('open');
-  if(ham){
-    const spans=ham.querySelectorAll('span');
-    if(nav.classList.contains('open')){
-      spans[0].style.transform='rotate(45deg) translate(5px,5px)';
-      spans[1].style.opacity='0';
-      spans[2].style.transform='rotate(-45deg) translate(5px,-5px)';
-    } else {
-      spans.forEach(s=>{s.style.transform='';s.style.opacity='';});
-    }
-  }
-}
+  <div class="ad-strip"><small>Advertisement</small>📢 Google AdSense (728×90) — Replace with your ad code</div>
 
-/* ═══ BACKGROUND CANVAS ═══ */
-function initBgCanvas(){
-  const canvas=document.getElementById('bg-canvas');
-  if(!canvas)return;
-  const ctx=canvas.getContext('2d');
-  let W=canvas.width=window.innerWidth;
-  let H=canvas.height=window.innerHeight;
-  const dots=Array.from({length:60},()=>({
-    x:Math.random()*W, y:Math.random()*H,
-    r:Math.random()*1.5+.5,
-    vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3,
-    a:Math.random()*.5+.2
-  }));
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    dots.forEach(d=>{
-      d.x+=d.vx; d.y+=d.vy;
-      if(d.x<0||d.x>W)d.vx*=-1;
-      if(d.y<0||d.y>H)d.vy*=-1;
-      ctx.beginPath();
-      ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(124,108,252,${d.a})`;
-      ctx.fill();
-    });
-    for(let i=0;i<dots.length;i++){
-      for(let j=i+1;j<dots.length;j++){
-        const dx=dots[i].x-dots[j].x;
-        const dy=dots[i].y-dots[j].y;
-        const dist=Math.sqrt(dx*dx+dy*dy);
-        if(dist<120){
-          ctx.beginPath();
-          ctx.moveTo(dots[i].x,dots[i].y);
-          ctx.lineTo(dots[j].x,dots[j].y);
-          ctx.strokeStyle=`rgba(124,108,252,${.06*(1-dist/120)})`;
-          ctx.lineWidth=.5;
-          ctx.stroke();
-        }
-      }
-    }
-    requestAnimationFrame(draw);
-  }
-  draw();
-  window.addEventListener('resize',()=>{
-    W=canvas.width=window.innerWidth;
-    H=canvas.height=window.innerHeight;
-  });
-}
+  <section id="tools">
+    <div class="sh reveal">
+      <div class="sh-tag">⚙️ All Tools</div>
+      <h2>17 Powerful Free Tools</h2>
+      <p>No watermarks. No login. No hidden charges. Ever.</p>
+    </div>
+    <div class="tools-search reveal">
+      <span class="tools-search-icon">🔍</span>
+      <input type="text" placeholder="Search tools — try 'PDF', 'QR', 'GST'..." oninput="filterTools(this.value)" id="tools-search-input"/>
+    </div>
+    <div class="tools-grid" id="tools-grid"></div>
+  </section>
 
-/* ═══ HERO 3D CANVAS ═══ */
-function initHero3D(){
-  const canvas=document.getElementById('hero3d');
-  if(!canvas)return;
-  const ctx=canvas.getContext('2d');
-  canvas.width=canvas.offsetWidth||500;
-  canvas.height=canvas.offsetHeight||480;
-  const W=canvas.width, H=canvas.height;
-  const icons=['📄','🖼️','📱','💰','🔐','📝','🔗','🔤','🔄','🎂','🔢','🔡','🧾','🏦','▶️'];
-  const cards=icons.map((ic,i)=>({
-    icon:ic,
-    x:W/2+(Math.cos(i/icons.length*Math.PI*2)*W*.35),
-    y:H/2+(Math.sin(i/icons.length*Math.PI*2)*H*.35),
-    vx:(Math.random()-.5)*.8,
-    vy:(Math.random()-.5)*.8,
-    size:36+Math.random()*16,
-    a:0
-  }));
-  let frame=0;
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    frame++;
-    cards.forEach((c,i)=>{
-      c.a=Math.min(1,c.a+.02);
-      const orbit=frame*.008+i*(Math.PI*2/cards.length);
-      c.x=W/2+Math.cos(orbit)*(W*.3)+Math.sin(orbit*.7)*(W*.08);
-      c.y=H/2+Math.sin(orbit)*(H*.28)+Math.cos(orbit*.5)*(H*.06);
-      ctx.save();
-      ctx.globalAlpha=c.a*.85;
-      ctx.shadowColor='rgba(124,108,252,.3)';
-      ctx.shadowBlur=16;
-      ctx.fillStyle='rgba(20,20,40,.85)';
-      const r=10;
-      const bw=c.size+16, bh=c.size+8;
-      ctx.beginPath();
-      ctx.roundRect(c.x-bw/2,c.y-bh/2,bw,bh,r);
-      ctx.fill();
-      ctx.strokeStyle='rgba(124,108,252,.25)';
-      ctx.lineWidth=1;
-      ctx.stroke();
-      ctx.font=c.size+'px serif';
-      ctx.textAlign='center';
-      ctx.textBaseline='middle';
-      ctx.shadowBlur=0;
-      ctx.fillText(c.icon,c.x,c.y);
-      ctx.restore();
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
-}
+  <div class="ad-strip" style="max-width:980px"><small>Advertisement</small>📢 Google AdSense (970×90) — Replace with your ad code</div>
 
-/* ═══ REVEAL OBSERVER ═══ */
-const obs=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target);}});
-},{threshold:.15});
+  <section id="why" style="background:rgba(124,108,252,.025)">
+    <div class="sh reveal">
+      <div class="sh-tag">💎 Why NestToolz</div>
+      <h2>Why 50,000+ Users Trust Us</h2>
+      <p>We built what others got wrong — fast, clean, truly free tools.</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-c reveal"><div class="why-ic">⚡</div><h4>Lightning Fast</h4><p>All tools run in your browser. No server wait, instant results.</p></div>
+      <div class="why-c reveal"><div class="why-ic">🔒</div><h4>100% Private</h4><p>Your files never leave your device. Zero data stored, zero tracking.</p></div>
+      <div class="why-c reveal"><div class="why-ic">📱</div><h4>Mobile Friendly</h4><p>Works perfectly on phone, tablet, laptop — any screen size.</p></div>
+      <div class="why-c reveal"><div class="why-ic">🆓</div><h4>Free Forever</h4><p>No premium plans, no fees, no watermarks. All tools 100% free.</p></div>
+      <div class="why-c reveal"><div class="why-ic">🚫</div><h4>No Signup Needed</h4><p>Open any tool and start using it. No account, no email required.</p></div>
+      <div class="why-c reveal"><div class="why-ic">🌐</div><h4>Works Offline</h4><p>Most tools work without internet once loaded. Perfect for slow networks.</p></div>
+    </div>
+  </section>
 
-/* ═══ LIVE TIMESTAMP TICKER ═══ */
-setInterval(()=>{
-  if(passHistory.length && document.getElementById('pass-history-panel')?.style.display !== 'none'){
-    renderPassHistory();
-  }
-}, 30000);
+  <section id="blog">
+    <div class="sh reveal">
+      <div class="sh-tag">📖 Guides</div>
+      <h2>Helpful Articles</h2>
+      <p>Learn how to use our tools and get more done every day.</p>
+    </div>
+    <div class="blog-grid">
+      <div class="blog-c reveal" onclick="navigatePage(null,'blog-post','merge-pdf-online')" style="cursor:pointer"><div class="blog-thumb" style="background:linear-gradient(135deg,#1a1a3e,#2d1b69)">📄</div><div class="blog-body"><div class="blog-meta">📅 PDF Tools • 5 min</div><h4>How to Merge Multiple PDFs Online for Free in 2025</h4><p>Step-by-step guide to combine PDF files. Works on Windows, Mac, Android & iPhone.</p><a class="read-more" href="/blog/merge-pdf-online" onclick="navigatePage(event,'blog-post','merge-pdf-online')">Read Article →</a></div></div>
+      <div class="blog-c reveal" onclick="navigatePage(null,'blog-post','emi-calculator-guide')" style="cursor:pointer"><div class="blog-thumb" style="background:linear-gradient(135deg,#1a2e1a,#0d3d1e)">💰</div><div class="blog-body"><div class="blog-meta">📅 Finance • 7 min</div><h4>EMI Calculator: How to Calculate Home Loan EMI in India</h4><p>Understand how banks calculate EMI and how to plan your loan repayment smartly.</p><a class="read-more" href="/blog/emi-calculator-guide" onclick="navigatePage(event,'blog-post','emi-calculator-guide')">Read Article →</a></div></div>
+      <div class="blog-c reveal" onclick="navigatePage(null,'blog-post','strong-password-tips')" style="cursor:pointer"><div class="blog-thumb" style="background:linear-gradient(135deg,#2e1a1a,#3d0d0d)">🔐</div><div class="blog-body"><div class="blog-meta">📅 Security • 4 min</div><h4>How to Create a Strong Password That You Can Remember</h4><p>Tips from cybersecurity experts on creating unbreakable passwords.</p><a class="read-more" href="/blog/strong-password-tips" onclick="navigatePage(event,'blog-post','strong-password-tips')">Read Article →</a></div></div>
+      <div class="blog-c reveal" onclick="navigatePage(null,'blog-post','whatsapp-business-link')" style="cursor:pointer"><div class="blog-thumb" style="background:linear-gradient(135deg,#1a2a2e,#0d2d3d)">📱</div><div class="blog-body"><div class="blog-meta">📅 Business • 6 min</div><h4>WhatsApp Business: Add Click-to-Chat Link on Your Website</h4><p>Complete guide for small business owners to generate WhatsApp links.</p><a class="read-more" href="/blog/whatsapp-business-link" onclick="navigatePage(event,'blog-post','whatsapp-business-link')">Read Article →</a></div></div>
+      <div class="blog-c reveal" onclick="navigatePage(null,'blog-post','compress-images-guide')" style="cursor:pointer"><div class="blog-thumb" style="background:linear-gradient(135deg,#2e2a1a,#3d2d0d)">🖼️</div><div class="blog-body"><div class="blog-meta">📅 Images • 5 min</div><h4>Compress Images Without Losing Quality — Complete Guide</h4><p>Best settings for web & social media and free tools to use right now.</p><a class="read-more" href="/blog/compress-images-guide" onclick="navigatePage(event,'blog-post','compress-images-guide')">Read Article →</a></div></div>
+      <div class="blog-c reveal" onclick="navigatePage(null,'blog-post','qr-code-business-uses')" style="cursor:pointer"><div class="blog-thumb" style="background:linear-gradient(135deg,#1a1e2e,#0d153d)">📊</div><div class="blog-body"><div class="blog-meta">📅 QR Code • 3 min</div><h4>QR Code for Business: 10 Creative Ways to Use QR Codes in 2025</h4><p>From restaurant menus to business cards — learn how QR codes grow your business.</p><a class="read-more" href="/blog/qr-code-business-uses" onclick="navigatePage(event,'blog-post','qr-code-business-uses')">Read Article →</a></div></div>
+    </div>
+  </section>
 
-/* ═══ INIT ═══ */
-document.addEventListener('DOMContentLoaded',()=>{
-  renderToolsGrid();
-  initBgCanvas();
-  initHero3D();
-  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
-  const pdfFiles=document.getElementById('pdf-files');
-  if(pdfFiles){
-    pdfFiles.addEventListener('change',function(){
-      const list=document.getElementById('pdf-file-list');
-      if(list) list.innerHTML=Array.from(this.files).map(f=>`<div>📄 ${f.name} (${(f.size/1024).toFixed(0)} KB)</div>`).join('');
-    });
-  }
-});
+  <div class="ad-strip"><small>Advertisement</small>📢 Google AdSense (336×280) — Replace with your ad code</div>
+
+  <footer id="footer-contact">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <svg class="footer-logo" viewBox="0 0 220 56" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="gF" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7c6cfc"/><stop offset="100%" stop-color="#c084fc"/></linearGradient></defs>
+          <polygon points="28,3 46,13 46,33 28,43 10,33 10,13" fill="url(#gF)" opacity="0.13"/>
+          <polygon points="28,3 46,13 46,33 28,43 10,33 10,13" fill="none" stroke="url(#gF)" stroke-width="1.2"/>
+          <polygon points="28,10 42,18 42,32 28,40 14,32 14,18" fill="url(#gF)" opacity="0.2"/>
+          <polygon points="28,17 38,23 38,33 28,39 18,33 18,23" fill="url(#gF)" opacity="0.28"/>
+          <polygon points="28,22 35,26 35,34 28,38 21,34 21,26" fill="url(#gF)"/>
+          <text x="28" y="35" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="white">N</text>
+          <text x="58" y="31" font-family="'Syne','Inter',Arial Black,sans-serif" font-size="22" font-weight="800" fill="#f0f0f5">Nest</text>
+          <text x="112" y="31" font-family="'Syne','Inter',Arial Black,sans-serif" font-size="22" font-weight="800" fill="url(#gF)">Toolz</text>
+          <text x="58" y="43" font-family="'Inter',Arial,sans-serif" font-size="7.5" fill="#6060a0" letter-spacing="2">FREE ONLINE TOOLS</text>
+        </svg>
+        <p>India's favorite free online tool collection. No ads forced, no login needed, no data stored. Just pure utility.</p>
+      </div>
+      <div class="fc"><h5>PDF & Image Tools</h5>
+        <a href="/tools/pdf-merge" onclick="navigateTo(event,'pdf-merge')">PDF Merge</a>
+        <a href="/tools/pdf-compress" onclick="navigateTo(event,'pdf-compress')">PDF Compress</a>
+        <a href="/tools/image-compressor" onclick="navigateTo(event,'img-compress')">Image Compressor</a>
+        <a href="/tools/jpg-to-png" onclick="navigateTo(event,'jpg-to-png')">JPG to PNG</a>
+        <a href="/tools/png-to-jpg" onclick="navigateTo(event,'png-to-jpg')">PNG to JPG</a>
+        <a href="/tools/qr-code-generator" onclick="navigateTo(event,'qr-gen')">QR Generator</a>
+      </div>
+      <div class="fc"><h5>Finance & Utility</h5>
+        <a href="/tools/emi-calculator" onclick="navigateTo(event,'emi-calc')">EMI Calculator</a>
+        <a href="/tools/gst-calculator" onclick="navigateTo(event,'gst-calc')">GST Calculator</a>
+        <a href="/tools/loan-calculator" onclick="navigateTo(event,'loan-calc')">Loan Calculator</a>
+        <a href="/tools/age-calculator" onclick="navigateTo(event,'age-calc')">Age Calculator</a>
+        <a href="/tools/invoice-generator" onclick="navigateTo(event,'invoice-gen')">Invoice Generator</a>
+        <a href="/tools/password-generator" onclick="navigateTo(event,'pass-gen')">Password Generator</a>
+      </div>
+      <div class="fc"><h5>Text & More</h5>
+        <a href="/tools/word-counter" onclick="navigateTo(event,'word-count')">Word Counter</a>
+        <a href="/tools/character-counter" onclick="navigateTo(event,'char-count')">Character Counter</a>
+        <a href="/tools/base64-encoder" onclick="navigateTo(event,'base64')">Base64 Encoder</a>
+        <a href="/tools/whatsapp-link-generator" onclick="navigateTo(event,'wa-link')">WhatsApp Link</a>
+        <a href="/tools/youtube-thumbnail-downloader" onclick="navigateTo(event,'yt-thumb')">YouTube Thumbnail</a>
+        <a href="/about" onclick="navigatePage(event,'about')">About Us</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2024 NestToolz — Made with ❤️ in India &nbsp;|&nbsp; All tools 100% free &nbsp;|&nbsp;
+      <a href="/privacy" onclick="navigatePage(event,'privacy')" style="color:var(--p2)">Privacy Policy</a> &nbsp;|&nbsp;
+      <a href="/contact" onclick="navigatePage(event,'contact')" style="color:var(--p2)">Contact</a>
+    </div>
+  </footer>
+</div>
+
+<!-- ═══════════ INNER PAGE VIEW ═══════════ -->
+<div id="page-view" style="display:none">
+  <nav>
+    <a class="logo" href="/" onclick="navigateHome(event)">
+      <span class="logo-dot"></span>
+      <svg class="logo-svg" viewBox="0 0 220 56" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="gLP" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7c6cfc"/><stop offset="100%" stop-color="#c084fc"/></linearGradient></defs>
+        <polygon points="28,3 46,13 46,33 28,43 10,33 10,13" fill="url(#gLP)" opacity="0.13"/>
+        <polygon points="28,3 46,13 46,33 28,43 10,33 10,13" fill="none" stroke="url(#gLP)" stroke-width="1.2"/>
+        <polygon points="28,10 42,18 42,32 28,40 14,32 14,18" fill="url(#gLP)" opacity="0.2"/>
+        <polygon points="28,17 38,23 38,33 28,39 18,33 18,23" fill="url(#gLP)" opacity="0.28"/>
+        <polygon points="28,22 35,26 35,34 28,38 21,34 21,26" fill="url(#gLP)"/>
+        <text x="28" y="35" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="white">N</text>
+        <text x="58" y="31" font-family="'Syne','Inter',Arial Black,sans-serif" font-size="22" font-weight="800" fill="#f0f0f5">Nest</text>
+        <text x="112" y="31" font-family="'Syne','Inter',Arial Black,sans-serif" font-size="22" font-weight="800" fill="url(#gLP)">Toolz</text>
+        <text x="58" y="43" font-family="'Inter',Arial,sans-serif" font-size="7.5" fill="#6060a0" letter-spacing="2">FREE ONLINE TOOLS</text>
+      </svg>
+    </a>
+    <ul class="nav-links">
+      <li><a href="/" onclick="navigateHome(event)">🏠 Home</a></li>
+      <li><a href="/blog" onclick="navigatePage(event,'blog-home')">📖 Blog</a></li>
+      <li><a href="/about" onclick="navigatePage(event,'about')">👋 About</a></li>
+      <li><a href="/contact" onclick="navigatePage(event,'contact')">📬 Contact</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="nav-btn" onclick="navigateHome(event)">⚡ All Tools</button>
+      <button class="hamburger" onclick="toggleMobileNav()" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+  <div id="page-content" style="max-width:860px;margin:0 auto;padding:60px 5% 100px;min-height:80vh"></div>
+  <footer style="border-top:1px solid var(--border);padding:28px 5%;text-align:center;font-size:.8rem;color:var(--tx3)">
+    © 2024 NestToolz — Made with ❤️ in India &nbsp;|&nbsp;
+    <a href="/privacy" onclick="navigatePage(event,'privacy')" style="color:var(--p2)">Privacy Policy</a> &nbsp;|&nbsp;
+    <a href="/contact" onclick="navigatePage(event,'contact')" style="color:var(--p2)">Contact</a>
+  </footer>
+</div>
+
+<!-- ═══════════ TOOL VIEW ═══════════ -->
+<div id="tool-view">
+  <div class="tool-page">
+    <div class="tp-nav">
+      <a class="tp-back" href="/" onclick="navigateHome(event)">← All Tools</a>
+      <svg class="tp-nav-logo" viewBox="0 0 220 56" xmlns="http://www.w3.org/2000/svg" onclick="navigateHome(event)" style="cursor:pointer">
+        <defs><linearGradient id="gTN" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7c6cfc"/><stop offset="100%" stop-color="#c084fc"/></linearGradient></defs>
+        <polygon points="28,3 46,13 46,33 28,43 10,33 10,13" fill="url(#gTN)" opacity="0.13"/>
+        <polygon points="28,3 46,13 46,33 28,43 10,33 10,13" fill="none" stroke="url(#gTN)" stroke-width="1.2"/>
+        <polygon points="28,10 42,18 42,32 28,40 14,32 14,18" fill="url(#gTN)" opacity="0.2"/>
+        <polygon points="28,17 38,23 38,33 28,39 18,33 18,23" fill="url(#gTN)" opacity="0.28"/>
+        <polygon points="28,22 35,26 35,34 28,38 21,34 21,26" fill="url(#gTN)"/>
+        <text x="28" y="35" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="white">N</text>
+        <text x="58" y="31" font-family="'Syne','Inter',Arial Black,sans-serif" font-size="22" font-weight="800" fill="#f0f0f5">Nest</text>
+        <text x="112" y="31" font-family="'Syne','Inter',Arial Black,sans-serif" font-size="22" font-weight="800" fill="url(#gTN)">Toolz</text>
+        <text x="58" y="43" font-family="'Inter',Arial,sans-serif" font-size="7.5" fill="#6060a0" letter-spacing="2">FREE ONLINE TOOLS</text>
+      </svg>
+      <div style="width:100px"></div>
+    </div>
+    <div class="tp-body">
+      <div class="tp-main">
+        <div class="tp-breadcrumb">
+          <a href="/" onclick="navigateHome(event)">🏠 Home</a>
+          <span>/</span><a href="/" onclick="navigateHome(event)">Tools</a>
+          <span>/</span><span class="current" id="tp-breadcrumb-name"></span>
+        </div>
+        <div class="tp-url-chip" id="tp-url-chip">🔗 nesttoolz.com/tools/</div>
+        <div class="tp-header">
+          <div class="tp-icon-wrap" id="tp-icon-wrap"><span id="tp-icon" style="font-size:2rem"></span></div>
+          <h1 id="tp-title"></h1>
+          <p id="tp-desc"></p>
+        </div>
+        <div class="tp-card">
+          <h3 id="tp-card-title">Use Tool</h3>
+          <div class="fi" id="tp-ui"></div>
+        </div>
+        <!-- Share Buttons -->
+        <div class="tp-card" id="tp-share-card">
+          <h3>📤 Share This Tool</h3>
+          <div class="share-row">
+            <a class="share-btn share-wa" id="share-wa-btn" href="#" target="_blank" rel="noopener">📲 Share on WhatsApp</a>
+            <a class="share-btn share-tw" id="share-tw-btn" href="#" target="_blank" rel="noopener">🐦 Tweet</a>
+            <button class="share-btn share-cp" onclick="copyToolLink()">🔗 Copy Link</button>
+          </div>
+        </div>
+        <!-- How to Use -->
+        <div class="info-card" id="tp-howto-card">
+          <h3>📖 How to Use</h3>
+          <div id="tp-howto"></div>
+        </div>
+        <!-- Benefits -->
+        <div class="info-card" id="tp-benefits-card">
+          <h3>✅ Benefits</h3>
+          <div id="tp-benefits"></div>
+        </div>
+        <!-- FAQ -->
+        <div class="info-card" id="tp-faq-card">
+          <h3>❓ Frequently Asked Questions</h3>
+          <div id="tp-faq"></div>
+        </div>
+        <!-- SEO / extra info -->
+        <div class="tp-card" id="tp-seo-card">
+          <h3>ℹ️ About This Tool</h3>
+          <div id="tp-seo" style="font-size:.87rem;color:var(--tx2);line-height:1.8"></div>
+        </div>
+      </div>
+      <div class="tp-sidebar">
+        <div class="sidebar-ad">
+          <small>Advertisement</small>
+          📢 AdSense (300×250)<br/>Replace with your ad code
+        </div>
+        <div class="related-tools">
+          <h4>🔧 You Might Also Need</h4>
+          <div id="related-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- END PART 1 — CONTINUE WITH PART 2 BELOW, REPLACING </body></html> -->
