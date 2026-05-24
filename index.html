@@ -1,1012 +1,603 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta name="google-site-verification" content="UoQ1zgTSnykafDsNx6UnIfVRuXTsXv9TS5mxhjjWfOw" />
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>NestToolz – Free Online Tools</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<style>
-:root{
-  --bg:#0d0d1a;--bg2:#13131f;--bg3:#1a1a2e;
-  --p:#6c5ce7;--p2:#7c6cfc;--pk:#f472b6;
-  --g:#34d399;--r:#f87171;--y:#fbbf24;--b:#38bdf8;
-  --tx:#f0f0ff;--tx2:#b0b0cc;--tx3:#6b6b8a;
-  --border:rgba(124,108,252,.18);
-  --card:rgba(255,255,255,.03);
-  --card-h:rgba(255,255,255,.06);
-  --radius:16px;--radius-sm:10px;
-  --shadow:0 8px 32px rgba(0,0,0,.4);
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
-a{color:inherit;text-decoration:none}
-input,textarea,select{font-family:inherit}
-button{font-family:inherit;cursor:pointer}
-
-/* SCROLLBAR */
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:var(--bg2)}
-::-webkit-scrollbar-thumb{background:var(--p);border-radius:99px}
-
-/* BG CANVAS */
-#bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.5}
-
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 24px;height:64px;
-  display:flex;align-items:center;justify-content:space-between;
-  background:rgba(13,13,26,.85);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border)}
-.nav-logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.1rem}
-.nav-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--p),var(--p2));border-radius:10px;
-  display:flex;align-items:center;justify-content:center;font-size:1.1rem}
-.nav-links{display:flex;align-items:center;gap:6px}
-.nav-links a{padding:7px 14px;border-radius:8px;font-size:.85rem;font-weight:500;color:var(--tx2);transition:all .2s}
-.nav-links a:hover{color:var(--tx);background:var(--card-h)}
-.nav-search{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);
-  border:1px solid var(--border);border-radius:10px;padding:7px 14px;min-width:200px}
-.nav-search input{background:none;border:none;outline:none;color:var(--tx);font-size:.85rem;width:100%}
-.nav-search input::placeholder{color:var(--tx3)}
-#ham-btn{display:none;flex-direction:column;gap:5px;background:none;border:none;padding:4px;cursor:pointer}
-#ham-btn span{display:block;width:22px;height:2px;background:var(--tx2);border-radius:2px;transition:all .3s}
-#mobile-nav{display:none;position:fixed;top:64px;left:0;right:0;z-index:99;
-  background:rgba(13,13,26,.97);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);padding:16px;
-  flex-direction:column;gap:6px}
-#mobile-nav.open{display:flex}
-#mobile-nav a{padding:12px 16px;border-radius:10px;font-size:.9rem;font-weight:500;color:var(--tx2);transition:all .2s;border:1px solid transparent}
-#mobile-nav a:hover{color:var(--tx);background:var(--card-h);border-color:var(--border)}
-.mob-search{background:rgba(255,255,255,.05);border:1px solid var(--border);
-  border-radius:10px;padding:10px 14px;color:var(--tx);font-size:.9rem;outline:none;width:100%;margin-bottom:4px}
-
-/* MAIN */
-main{position:relative;z-index:1;padding-top:64px}
-
-/* HERO */
-.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;
-  padding:80px 24px 60px;text-align:center;position:relative;overflow:hidden}
-.hero-inner{max-width:760px;position:relative;z-index:2}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;
-  background:rgba(124,108,252,.1);border:1px solid rgba(124,108,252,.3);
-  border-radius:99px;padding:6px 16px;font-size:.78rem;font-weight:600;color:var(--p2);margin-bottom:28px}
-.hero h1{font-size:clamp(2.2rem,5vw,3.4rem);font-weight:900;line-height:1.1;margin-bottom:20px;letter-spacing:-.03em}
-.hero h1 span{background:linear-gradient(135deg,var(--p2),var(--pk));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero p{font-size:1.05rem;color:var(--tx2);max-width:540px;margin:0 auto 36px;line-height:1.7}
-.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:48px}
-.btn-primary{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;border:none;
-  padding:13px 28px;border-radius:12px;font-size:.95rem;font-weight:700;transition:all .25s;
-  box-shadow:0 4px 20px rgba(124,108,252,.35)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,108,252,.5)}
-.btn-ghost{background:transparent;color:var(--tx2);
-  border:1.5px solid var(--border);padding:13px 28px;border-radius:12px;font-size:.95rem;font-weight:600;transition:all .25s}
-.btn-ghost:hover{border-color:var(--p2);color:var(--p2)}
-.hero-stats{display:flex;gap:32px;justify-content:center;flex-wrap:wrap}
-.h-stat{text-align:center}
-.h-stat strong{display:block;font-size:1.6rem;font-weight:900;color:var(--p2)}
-.h-stat span{font-size:.78rem;color:var(--tx3)}
-.hero3d-wrap{position:absolute;right:-60px;top:50%;transform:translateY(-50%);opacity:.18;pointer-events:none}
-#hero3d{width:500px;height:480px}
-
-/* SECTION */
-section{padding:80px 24px;max-width:1200px;margin:0 auto}
-.sec-head{text-align:center;margin-bottom:48px}
-.sec-head h2{font-size:clamp(1.6rem,3vw,2.1rem);font-weight:900;margin-bottom:10px;letter-spacing:-.02em}
-.sec-head p{color:var(--tx2);font-size:.95rem;max-width:480px;margin:0 auto}
-.sec-tag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--p2);margin-bottom:12px}
-
-/* TOOLS GRID */
-.tools-search-wrap{max-width:480px;margin:0 auto 32px;position:relative}
-.tools-search-wrap input{width:100%;background:rgba(255,255,255,.05);border:1.5px solid var(--border);
-  border-radius:12px;padding:12px 16px 12px 44px;color:var(--tx);font-size:.95rem;outline:none;transition:border-color .2s}
-.tools-search-wrap input:focus{border-color:var(--p2)}
-.tools-search-wrap::before{content:'🔍';position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:.9rem}
-.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
-.tc{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);
-  padding:20px;transition:all .25s;display:block;position:relative;overflow:hidden}
-.tc::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(124,108,252,.05),transparent);opacity:0;transition:opacity .25s}
-.tc:hover{transform:translateY(-3px);border-color:rgba(124,108,252,.4);background:var(--card-h);box-shadow:0 8px 30px rgba(0,0,0,.3)}
-.tc:hover::before{opacity:1}
-.tc-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.tc-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
-.tc-tag{font-size:.65rem;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:99px;margin-left:auto}
-.tag-hot{background:rgba(248,113,113,.12);color:var(--r);border:1px solid rgba(248,113,113,.25)}
-.tag-new{background:rgba(52,211,153,.1);color:var(--g);border:1px solid rgba(52,211,153,.22)}
-.tag-free{background:rgba(124,108,252,.1);color:var(--p2);border:1px solid rgba(124,108,252,.22)}
-.tc-arrow{font-size:1rem;color:var(--tx3);margin-left:auto;transition:transform .2s}
-.tc:hover .tc-arrow{transform:translateX(4px);color:var(--p2)}
-.tc h3{font-size:.9rem;font-weight:700;margin-bottom:6px;color:var(--tx)}
-.tc p{font-size:.78rem;color:var(--tx3);line-height:1.5}
-.no-results{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--tx3);font-size:.95rem;line-height:1.8}
-
-/* TOOL VIEW */
-#tool-view{display:none;min-height:100vh;padding:80px 24px 60px}
-.tv-inner{max-width:800px;margin:0 auto}
-.tv-breadcrumb{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--tx3);margin-bottom:24px;flex-wrap:wrap}
-.tv-breadcrumb a{color:var(--p2);transition:color .2s}
-.tv-breadcrumb a:hover{color:var(--pk)}
-.tv-breadcrumb span{color:var(--tx3)}
-.tv-head{display:flex;align-items:center;gap:16px;margin-bottom:32px}
-.tv-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0}
-.tv-head h1{font-size:1.6rem;font-weight:900;margin-bottom:4px}
-.tv-head p{font-size:.88rem;color:var(--tx2)}
-.tool-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:20px}
-.tool-card h3{font-size:.88rem;font-weight:700;margin-bottom:16px;color:var(--tx2);text-transform:uppercase;letter-spacing:.08em}
-.fi-row{display:grid;gap:12px}
-.fi-row label{font-size:.82rem;color:var(--tx3);margin-bottom:4px;display:block}
-input[type=text],input[type=number],input[type=email],input[type=date],input[type=url],
-input[type=tel],textarea,select{
-  width:100%;background:rgba(255,255,255,.04);border:1.5px solid var(--border);
-  border-radius:10px;padding:11px 13px;color:var(--tx);font-family:inherit;font-size:.88rem;
-  outline:none;transition:border-color .2s;-webkit-appearance:none}
-input:focus,textarea:focus,select:focus{border-color:var(--p2)}
-input[type=file]{padding:10px;color:var(--tx2);font-size:.85rem}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;background:rgba(255,255,255,.1);border-radius:2px;outline:none;border:none;padding:0}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;background:var(--p2);border-radius:50%;cursor:pointer}
-input[type=color]{width:48px;height:38px;padding:4px;border-radius:8px;cursor:pointer;background:rgba(255,255,255,.05);border:1.5px solid var(--border)}
-.cbtn{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;border:none;
-  padding:12px 24px;border-radius:11px;font-size:.88rem;font-weight:700;transition:all .25s;
-  box-shadow:0 3px 14px rgba(124,108,252,.3);width:100%}
-.cbtn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 22px rgba(124,108,252,.45)}
-.cbtn:disabled{opacity:.5;cursor:not-allowed}
-.cbtn-sm{background:rgba(124,108,252,.12);color:var(--p2);border:1.5px solid rgba(124,108,252,.28);
-  padding:9px 20px;border-radius:10px;font-size:.82rem;font-weight:700;transition:all .2s;width:100%}
-.cbtn-sm:hover{background:rgba(124,108,252,.22)}
-.result-box{background:rgba(52,211,153,.05);border:1.5px solid rgba(52,211,153,.2);
-  border-radius:12px;padding:18px;font-size:.88rem;line-height:1.7;display:none;color:var(--tx2)}
-.result-box.show{display:block}
-.result-box p{margin:4px 0}
-.progress-wrap{background:rgba(255,255,255,.07);border-radius:99px;height:5px;overflow:hidden}
-.progress-bar{height:5px;border-radius:99px;transition:width .4s ease,background .4s}
-
-/* SEO CARD */
-.tp-seo-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:20px}
-.tp-seo-card h2{font-size:1rem;font-weight:800;margin-bottom:10px;color:var(--tx)}
-.tp-seo-card p{font-size:.84rem;color:var(--tx2);line-height:1.7;margin-bottom:12px}
-.tp-how h3,.tp-faq h3{font-size:.9rem;font-weight:700;color:var(--tx);margin:16px 0 8px}
-.tp-how ol{padding-left:20px;font-size:.83rem;color:var(--tx2);line-height:1.9}
-.tp-faq details{margin-bottom:8px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;padding:10px 14px}
-.tp-faq summary{font-size:.83rem;font-weight:600;color:var(--tx2);cursor:pointer;user-select:none;list-style:none}
-.tp-faq summary::before{content:'+ ';color:var(--p2)}
-.tp-faq details[open] summary::before{content:'- '}
-.tp-faq details p{font-size:.8rem;color:var(--tx3);line-height:1.6;margin-top:8px}
-.tp-benefits{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.tp-ben-tag{background:rgba(124,108,252,.08);border:1px solid rgba(124,108,252,.2);
-  color:var(--p2);padding:5px 12px;border-radius:99px;font-size:.75rem;font-weight:600}
-.tp-related h3{font-size:.88rem;font-weight:700;color:var(--tx);margin-bottom:12px}
-.tp-rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.tp-rel-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;
-  text-align:center;transition:all .2s;cursor:pointer}
-.tp-rel-card:hover{border-color:var(--p2);background:var(--card-h)}
-.tp-rel-card .icon{font-size:1.5rem;margin-bottom:6px}
-.tp-rel-card .name{font-size:.75rem;font-weight:600;color:var(--tx2)}
-
-/* SHARE BAR */
-.share-bar{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-.share-bar button{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:.78rem;font-weight:700;border:1.5px solid;transition:all .2s;cursor:pointer}
-.share-wa{background:rgba(37,211,102,.08);border-color:rgba(37,211,102,.3);color:#25d366}
-.share-wa:hover{background:rgba(37,211,102,.18)}
-.share-tw{background:rgba(29,161,242,.08);border-color:rgba(29,161,242,.3);color:#1da1f2}
-.share-tw:hover{background:rgba(29,161,242,.18)}
-.share-cp{background:rgba(255,255,255,.05);border-color:var(--border);color:var(--tx2)}
-.share-cp:hover{background:rgba(255,255,255,.1)}
-
-/* PASS SPECIFIC */
-.pass-out-wrap{position:relative}
-#pass-output{font-family:monospace;letter-spacing:.08em;padding-right:90px;font-size:.9rem}
-#pass-eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:1rem;cursor:pointer;padding:4px}
-#pass-copied-badge{position:absolute;top:-32px;right:0;background:var(--g);color:#fff;
-  font-size:.72rem;font-weight:700;padding:4px 12px;border-radius:99px;
-  opacity:0;transform:translateY(-6px);transition:all .3s;pointer-events:none}
-.pass-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
-.pass-opt{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card);
-  border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:.82rem;color:var(--tx2)}
-.pass-opt input[type=checkbox]{width:auto;padding:0;margin:0}
-.strength-wrap{margin:10px 0 4px}
-#pass-strength{font-size:.78rem;font-weight:600;margin-bottom:5px;color:var(--tx3)}
-.pass-history-panel{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:12px}
-.pass-history-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;margin-bottom:8px}
-.pass-history-header span{font-size:.82rem;font-weight:700;color:var(--tx2)}
-#pass-history-arrow{transition:transform .3s;font-size:.8rem;color:var(--tx3)}
-#pass-history-list{display:flex;flex-direction:column;gap:6px}
-.auto-copy-row{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--tx3);margin-top:8px}
-.auto-copy-row input{width:auto;padding:0;margin:0}
-
-/* QR SPECIFIC */
-#qr-container{display:flex;justify-content:center;margin:16px 0;min-height:40px}
-#qr-container canvas,#qr-container img{border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.3)}
-.qr-dl-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-
-/* WA SPECIFIC */
-#wa-output{display:none}
-#wa-output.show{display:block}
-#wa-link-wrap{background:rgba(255,255,255,.04);border:1.5px solid var(--border);border-radius:10px;padding:12px;margin:10px 0;font-size:.83rem;color:var(--p2);word-break:break-all;font-family:monospace}
-
-/* FEATURES */
-.features-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
-.feat-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;transition:all .25s}
-.feat-card:hover{border-color:rgba(124,108,252,.3);transform:translateY(-2px)}
-.feat-icon{font-size:2rem;margin-bottom:14px}
-.feat-card h3{font-size:.92rem;font-weight:800;margin-bottom:8px}
-.feat-card p{font-size:.8rem;color:var(--tx3);line-height:1.6}
-
-/* STATS BAR */
-.stats-bar{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
-  padding:28px 24px;text-align:center}
-.stats-inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-.stat strong{display:block;font-size:1.8rem;font-weight:900;color:var(--p2)}
-.stat span{font-size:.78rem;color:var(--tx3)}
-
-/* FOOTER */
-footer{background:var(--bg2);border-top:1px solid var(--border);padding:40px 24px 24px}
-.footer-inner{max-width:1200px;margin:0 auto}
-.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:32px}
-.footer-brand p{font-size:.82rem;color:var(--tx3);line-height:1.6;margin-top:10px}
-.footer-col h4{font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);margin-bottom:14px}
-.footer-col a{display:block;font-size:.82rem;color:var(--tx3);padding:3px 0;transition:color .2s}
-.footer-col a:hover{color:var(--p2)}
-.footer-bottom{border-top:1px solid var(--border);padding-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:.78rem;color:var(--tx3)}
-
-/* TOAST */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
-  background:rgba(30,30,50,.95);border:1px solid var(--border);
-  backdrop-filter:blur(20px);padding:12px 24px;border-radius:12px;
-  font-size:.85rem;font-weight:600;white-space:nowrap;z-index:9999;
-  opacity:0;transition:all .35s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.4)}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* INVOICE */
-.inv-item-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center}
-
-/* REVEAL ANIM */
-.reveal{opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease}
-.reveal.vis{opacity:1;transform:translateY(0)}
-
-/* RESPONSIVE */
-@media(max-width:768px){
-  .nav-links,.nav-search{display:none}
-  #ham-btn{display:flex}
-  .hero h1{font-size:2rem}
-  .hero-stats{gap:20px}
-  .h-stat strong{font-size:1.2rem}
-  .tools-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
-  .stats-inner{grid-template-columns:repeat(2,1fr)}
-  .footer-grid{grid-template-columns:1fr 1fr}
-  .features-grid{grid-template-columns:1fr}
-  .hero3d-wrap{display:none}
-  .tv-head h1{font-size:1.3rem}
-  .inv-item-row{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto}
-}
-@media(max-width:480px){
-  .tools-grid{grid-template-columns:1fr 1fr}
-  .stats-inner{grid-template-columns:repeat(2,1fr)}
-  .footer-grid{grid-template-columns:1fr}
-  .tc h3{font-size:.82rem}
-  section{padding:60px 16px}
-}
-</style>
-</head>
-<body>
-<canvas id="bg-canvas"></canvas>
-
-<!-- NAV -->
-<nav>
-  <div class="nav-logo">
-    <div class="nav-logo-icon">🛠️</div>
-    <span>NestToolz</span>
-  </div>
-  <div class="nav-links">
-    <a href="#" onclick="showHome();return false">Home</a>
-    <a href="#tools">Tools</a>
-    <a href="#features">Features</a>
-  </div>
-  <div class="nav-search">
-    <input type="text" id="nav-search-input" placeholder="Search tools..." oninput="filterTools(this.value)" autocomplete="off"/>
-  </div>
-  <button id="ham-btn" onclick="toggleMobileNav()" aria-label="Menu">
-    <span></span><span></span><span></span>
-  </button>
-</nav>
-
-<!-- MOBILE NAV -->
-<div id="mobile-nav">
-  <input class="mob-search" type="text" placeholder="🔍 Search tools..." oninput="filterTools(this.value)" autocomplete="off"/>
-  <a href="#" onclick="showHome();toggleMobileNav();return false">🏠 Home</a>
-  <a href="#tools" onclick="toggleMobileNav()">🛠️ All Tools</a>
-  <a href="#features" onclick="toggleMobileNav()">⚡ Features</a>
-</div>
-
-<main>
-<!-- HOME VIEW -->
-<div id="home-view">
-  <!-- HERO -->
-  <div class="hero">
-    <div class="hero-inner">
-      <div class="hero-badge">🚀 17+ Free Tools — No Sign Up Required</div>
-      <h1>Your Ultimate<br/><span>Free Toolbox</span></h1>
-      <p>PDF Merge, QR Generator, Image Compressor, EMI Calculator, Invoice Generator and many more — all free, fast & private.</p>
-      <div class="hero-btns">
-        <button class="btn-primary" onclick="document.getElementById('tools').scrollIntoView({behavior:'smooth'})">🛠️ Explore Tools</button>
-        <button class="btn-ghost" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">⚡ Why NestToolz?</button>
-      </div>
-      <div class="hero-stats">
-        <div class="h-stat"><strong>17+</strong><span>Free Tools</span></div>
-        <div class="h-stat"><strong>100%</strong><span>Private</span></div>
-        <div class="h-stat"><strong>0</strong><span>Sign Up Needed</span></div>
-        <div class="h-stat"><strong>∞</strong><span>Uses</span></div>
-      </div>
-    </div>
-    <div class="hero3d-wrap"><canvas id="hero3d"></canvas></div>
-  </div>
-
-  <!-- STATS BAR -->
-  <div class="stats-bar">
-    <div class="stats-inner">
-      <div class="stat"><strong>17+</strong><span>Tools Available</span></div>
-      <div class="stat"><strong>100%</strong><span>Free Forever</span></div>
-      <div class="stat"><strong>0ms</strong><span>Server Processing</span></div>
-      <div class="stat"><strong>🔒</strong><span>Your Data Stays Local</span></div>
-    </div>
-  </div>
-
-  <!-- TOOLS -->
-  <section id="tools">
-    <div class="sec-head reveal">
-      <div class="sec-tag">All Tools</div>
-      <h2>17+ Free Online Tools</h2>
-      <p>Everything you need in one place — no ads, no sign up, no limits</p>
-    </div>
-    <div class="tools-search-wrap reveal">
-      <input type="text" id="tools-search-input" placeholder="Search tools..." oninput="filterTools(this.value)" autocomplete="off"/>
-    </div>
-    <div class="tools-grid reveal" id="tools-grid"></div>
-  </section>
-
-  <!-- FEATURES -->
-  <section id="features">
-    <div class="sec-head reveal">
-      <div class="sec-tag">Why Choose Us</div>
-      <h2>Built for Speed & Privacy</h2>
-      <p>All tools run in your browser — your files never leave your device</p>
-    </div>
-    <div class="features-grid">
-      <div class="feat-card reveal"><div class="feat-icon">⚡</div><h3>Lightning Fast</h3><p>All processing happens in your browser. No server uploads, instant results.</p></div>
-      <div class="feat-card reveal"><div class="feat-icon">🔒</div><h3>100% Private</h3><p>Your files and data never leave your device. Zero tracking, zero storage.</p></div>
-      <div class="feat-card reveal"><div class="feat-icon">📱</div><h3>Mobile Friendly</h3><p>Works perfectly on phones, tablets and desktops. Fully responsive design.</p></div>
-      <div class="feat-card reveal"><div class="feat-icon">🆓</div><h3>Always Free</h3><p>No hidden fees, no premium plans, no watermarks. 100% free forever.</p></div>
-      <div class="feat-card reveal"><div class="feat-icon">🔧</div><h3>No Install Needed</h3><p>Works right in your browser. No apps, no extensions, no setup required.</p></div>
-      <div class="feat-card reveal"><div class="feat-icon">🌐</div><h3>Works Offline</h3><p>Once loaded, most tools work without internet. Perfect for slow connections.</p></div>
-    </div>
-  </section>
-</div>
-
-<!-- TOOL VIEW -->
-<div id="tool-view">
-  <div class="tv-inner">
-    <div class="tv-breadcrumb">
-      <a href="#" onclick="showHome();return false">🏠 Home</a>
-      <span>›</span>
-      <a href="#" onclick="showHome();return false">Tools</a>
-      <span>›</span>
-      <span id="tv-bc-name">Tool</span>
-    </div>
-    <div id="tool-content"></div>
-  </div>
-</div>
-</main>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <div class="nav-logo" style="margin-bottom:8px">
-          <div class="nav-logo-icon">🛠️</div>
-          <span style="font-weight:900">NestToolz</span>
-        </div>
-        <p>Free online tools for everyone. PDF, Image, QR, Calculator and more — all in one place.</p>
-      </div>
-      <div class="footer-col">
-        <h4>PDF Tools</h4>
-        <a href="#" onclick="navigateTo(event,'pdf-merge')">PDF Merge</a>
-        <a href="#" onclick="navigateTo(event,'pdf-compress')">PDF Compress</a>
-        <a href="#" onclick="navigateTo(event,'invoice')">Invoice Generator</a>
-      </div>
-      <div class="footer-col">
-        <h4>Image Tools</h4>
-        <a href="#" onclick="navigateTo(event,'img-compress')">Image Compressor</a>
-        <a href="#" onclick="navigateTo(event,'jpg-to-png')">JPG to PNG</a>
-        <a href="#" onclick="navigateTo(event,'png-to-jpg')">PNG to JPG</a>
-        <a href="#" onclick="navigateTo(event,'yt-thumb')">YT Thumbnail</a>
-      </div>
-      <div class="footer-col">
-        <h4>Utilities</h4>
-        <a href="#" onclick="navigateTo(event,'qr-gen')">QR Generator</a>
-        <a href="#" onclick="navigateTo(event,'word-counter')">Word Counter</a>
-        <a href="#" onclick="navigateTo(event,'emi-calc')">EMI Calculator</a>
-        <a href="#" onclick="navigateTo(event,'pass-gen')">Password Gen</a>
-        <a href="#" onclick="navigateTo(event,'wa-link')">WhatsApp Link</a>
-        <a href="#" onclick="navigateTo(event,'age-calc')">Age Calculator</a>
-        <a href="#" onclick="navigateTo(event,'gst-calc')">GST Calculator</a>
-        <a href="#" onclick="navigateTo(event,'loan-calc')">Loan Calculator</a>
-        <a href="#" onclick="navigateTo(event,'base64')">Base64 Tool</a>
-        <a href="#" onclick="navigateTo(event,'char-counter')">Char Counter</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2024 NestToolz. All rights reserved.</span>
-      <span>Made with ❤️ for free</span>
-    </div>
-  </div>
-</footer>
-
-<div id="toast"></div>
-
-<script>
-/* ===== TOOLS DATA ===== */
-const TOOLS = [
-  {id:'pdf-merge', slug:'pdf-merge', name:'PDF Merge', icon:'📄', desc:'Merge multiple PDFs into one file instantly.', tag:'hot', color:'rgba(248,113,113,.12)', border:'rgba(248,113,113,.25)',
-    metaTitle:'Free PDF Merge Online - Combine PDFs', metaDesc:'Merge multiple PDF files into one. Free, fast, no sign up.',
-    seoText:'Merge multiple PDF files into one document for free. No upload to server, works in your browser.',
-    howTo:['Select 2-5 PDF files','Click Merge PDFs button','Download your merged PDF'],
-    benefits:['No file size limit','Works offline','100% private'],
-    faqs:[{q:'How many PDFs can I merge?',a:'Up to 5 PDFs at once.'},{q:'Is my data safe?',a:'Yes, processing happens in your browser.'}],
-    related:['pdf-compress','img-compress','invoice']},
-
-  {id:'pdf-compress', slug:'pdf-compress', name:'PDF Compress', icon:'🗜️', desc:'Reduce PDF file size without quality loss.', tag:'hot', color:'rgba(251,191,36,.1)', border:'rgba(251,191,36,.25)',
-    metaTitle:'Compress PDF Online Free', metaDesc:'Reduce PDF size for free. Fast browser-based compression.',
-    seoText:'Reduce PDF file size online for free. Perfect for email attachments and uploads.',
-    howTo:['Upload your PDF','Choose compression level','Click Compress and download'],
-    benefits:['No quality loss','Instant download','Free forever'],
-    faqs:[{q:'How much can it compress?',a:'Typically 20-60% depending on content.'},{q:'Does it work on all PDFs?',a:'Yes, including scanned PDFs.'}],
-    related:['pdf-merge','img-compress','word-counter']},
-
-  {id:'img-compress', slug:'img-compress', name:'Image Compressor', icon:'🖼️', desc:'Compress JPG/PNG images without visible quality loss.', tag:'hot', color:'rgba(52,211,153,.1)', border:'rgba(52,211,153,.25)',
-    metaTitle:'Free Image Compressor Online', metaDesc:'Compress JPG and PNG images for free. Reduce size without losing quality.',
-    seoText:'Compress your images online for free. Reduce file size for faster websites and easy sharing.',
-    howTo:['Upload JPG or PNG image','Set quality level with slider','Click Compress and download'],
-    benefits:['Supports JPG & PNG','Live quality preview','Zero uploads'],
-    faqs:[{q:'What formats are supported?',a:'JPG and PNG images.'},{q:'Will quality be lost?',a:'Minimal loss, you control the quality level.'}],
-    related:['jpg-to-png','png-to-jpg','yt-thumb']},
-
-  {id:'qr-gen', slug:'qr-gen', name:'QR Code Generator', icon:'📱', desc:'Generate custom QR codes for URLs, text and more.', tag:'free', color:'rgba(56,189,248,.1)', border:'rgba(56,189,248,.25)',
-    metaTitle:'Free QR Code Generator Online', metaDesc:'Generate QR codes for free. Custom colors, sizes, instant download.',
-    seoText:'Create QR codes for URLs, text, contacts and more. Free QR code generator with custom colors.',
-    howTo:['Enter your URL or text','Choose size and color','Download PNG or JPG'],
-    benefits:['Custom colors','Multiple sizes','PNG & JPG download'],
-    faqs:[{q:'Can I use the QR code commercially?',a:'Yes, all generated QR codes are yours to use freely.'},{q:'What content can I encode?',a:'URLs, text, email, phone numbers and more.'}],
-    related:['wa-link','pass-gen','word-counter']},
-
-  {id:'word-counter', slug:'word-counter', name:'Word Counter', icon:'📝', desc:'Count words, characters, sentences and reading time.', tag:'free', color:'rgba(244,114,182,.1)', border:'rgba(244,114,182,.25)',
-    metaTitle:'Free Word Counter Online', metaDesc:'Count words, characters and sentences. Check reading time instantly.',
-    seoText:'Count words and characters in your text. Perfect for essays, articles and social media posts.',
-    howTo:['Paste or type your text','Stats update in real time','Use for SEO and social media'],
-    benefits:['Real-time counting','Social media limits','Reading time estimate'],
-    faqs:[{q:'Does it count spaces?',a:'Character count includes spaces. Word count does not.'},{q:'Is there a limit?',a:'No limit, paste as much text as you need.'}],
-    related:['char-counter','base64','pass-gen']},
-
-  {id:'emi-calc', slug:'emi-calc', name:'EMI Calculator', icon:'💰', desc:'Calculate monthly loan EMI with full breakdown.', tag:'hot', color:'rgba(52,211,153,.1)', border:'rgba(52,211,153,.25)',
-    metaTitle:'Free EMI Calculator India - Loan EMI', metaDesc:'Calculate EMI for home, car and personal loans. Free and instant.',
-    seoText:'Calculate your loan EMI instantly. Get full breakdown of principal, interest and total payment.',
-    howTo:['Enter loan amount','Set interest rate and tenure','Click Calculate EMI'],
-    benefits:['Instant calculation','Full breakdown','Indian formatting (Rs)'],
-    faqs:[{q:'What is EMI?',a:'EMI is Equated Monthly Installment — fixed monthly payment for a loan.'},{q:'Is this accurate?',a:'Yes, uses standard EMI formula used by all banks.'}],
-    related:['loan-calc','gst-calc','invoice']},
-
-  {id:'pass-gen', slug:'pass-gen', name:'Password Generator', icon:'🔐', desc:'Generate strong, secure passwords instantly.', tag:'free', color:'rgba(124,108,252,.12)', border:'rgba(124,108,252,.28)',
-    metaTitle:'Strong Password Generator - Free', metaDesc:'Generate secure passwords with symbols, numbers and letters. Free.',
-    seoText:'Generate strong random passwords for your accounts. Customize length, symbols and character types.',
-    howTo:['Set password length','Choose character types','Click Generate and copy'],
-    benefits:['Cryptographically random','Pin favourites','History tracking'],
-    faqs:[{q:'Are passwords stored?',a:'No, passwords exist only in your browser memory.'},{q:'How random are the passwords?',a:'Uses crypto.getRandomValues — cryptographically secure.'}],
-    related:['wa-link','qr-gen','base64']},
-
-  {id:'wa-link', slug:'wa-link', name:'WhatsApp Link Generator', icon:'💬', desc:'Create WhatsApp links with pre-filled messages.', tag:'new', color:'rgba(37,211,102,.1)', border:'rgba(37,211,102,.25)',
-    metaTitle:'WhatsApp Link Generator Free', metaDesc:'Create WhatsApp click-to-chat links. Add pre-filled message. Free.',
-    seoText:'Generate WhatsApp links for your business. Let customers message you directly with one click.',
-    howTo:['Enter phone number with country code','Add optional pre-filled message','Copy and share the link'],
-    benefits:['Pre-filled message','International format','Business ready'],
-    faqs:[{q:'Do I need WhatsApp Business?',a:'No, works with regular WhatsApp.'},{q:'What format is the phone number?',a:'Use international format, e.g. 919876543210 for India.'}],
-    related:['qr-gen','pass-gen','char-counter']},
-
-  {id:'age-calc', slug:'age-calc', name:'Age Calculator', icon:'🎂', desc:'Calculate exact age in years, months and days.', tag:'new', color:'rgba(244,114,182,.1)', border:'rgba(244,114,182,.25)',
-    metaTitle:'Age Calculator - Find Your Exact Age', metaDesc:'Calculate exact age from date of birth. Find days to next birthday. Free.',
-    seoText:'Calculate your exact age in years, months and days. Also shows total days lived and next birthday countdown.',
-    howTo:['Enter your date of birth','Click Calculate Age','See exact age and birthday countdown'],
-    benefits:['Exact years, months, days','Next birthday countdown','Total days lived'],
-    faqs:[{q:'How accurate is it?',a:'It accounts for leap years and different month lengths.'},{q:'Can I share my age result?',a:'Yes, use the share buttons below.'}],
-    related:['emi-calc','gst-calc','word-counter']},
-
-  {id:'jpg-to-png', slug:'jpg-to-png', name:'JPG to PNG', icon:'🔄', desc:'Convert JPG images to PNG format for free.', tag:'new', color:'rgba(56,189,248,.1)', border:'rgba(56,189,248,.25)',
-    metaTitle:'JPG to PNG Converter - Free Online', metaDesc:'Convert JPG to PNG online. Free, instant, no quality loss.',
-    seoText:'Convert your JPG images to PNG format instantly. Perfect for graphics, logos and transparent backgrounds.',
-    howTo:['Upload your JPG file','Preview the image','Click Convert and download PNG'],
-    benefits:['Lossless PNG output','Instant conversion','Free forever'],
-    faqs:[{q:'Will I lose quality?',a:'PNG is lossless, so no quality loss during conversion.'},{q:'What is the max file size?',a:'Limited only by your browser memory, typically 50MB+.'}],
-    related:['png-to-jpg','img-compress','yt-thumb']},
-
-  {id:'png-to-jpg', slug:'png-to-jpg', name:'PNG to JPG', icon:'🔃', desc:'Convert PNG images to JPG with quality control.', tag:'new', color:'rgba(251,191,36,.1)', border:'rgba(251,191,36,.25)',
-    metaTitle:'PNG to JPG Converter Free Online', metaDesc:'Convert PNG to JPG free. Control quality and reduce file size.',
-    seoText:'Convert PNG to JPG online for free. Reduce file size with quality control. Perfect for web images.',
-    howTo:['Upload your PNG file','Set output quality','Click Convert and download JPG'],
-    benefits:['Quality control slider','Smaller file size','White background fill'],
-    faqs:[{q:'Will transparent areas be kept?',a:'Transparent areas are filled with white in JPG.'},{q:'How small can I make the file?',a:'Use lower quality (60-70%) for maximum compression.'}],
-    related:['jpg-to-png','img-compress','yt-thumb']},
-
-  {id:'base64', slug:'base64', name:'Base64 Encoder/Decoder', icon:'🔤', desc:'Encode or decode Base64 text instantly.', tag:'free', color:'rgba(124,108,252,.12)', border:'rgba(124,108,252,.28)',
-    metaTitle:'Base64 Encoder Decoder Online Free', metaDesc:'Encode and decode Base64 text instantly. Free online tool.',
-    seoText:'Encode text to Base64 or decode Base64 strings instantly. Used in web development, APIs and emails.',
-    howTo:['Enter plain text or Base64 string','Click Encode or Decode','Copy the result'],
-    benefits:['Instant results','Copy to clipboard','Supports Unicode'],
-    faqs:[{q:'What is Base64?',a:'Base64 is an encoding scheme used to convert binary data to text format.'},{q:'Can I encode images?',a:'This tool handles text. For images, use the file as binary.'}],
-    related:['word-counter','char-counter','pass-gen']},
-
-  {id:'char-counter', slug:'char-counter', name:'Character Counter', icon:'🔢', desc:'Count characters with platform-specific limits.', tag:'free', color:'rgba(52,211,153,.1)', border:'rgba(52,211,153,.25)',
-    metaTitle:'Character Counter Online - Twitter Instagram', metaDesc:'Count characters for Twitter, Instagram, SMS and more. Free.',
-    seoText:'Count characters for social media posts. Shows limits for Twitter, Instagram, SMS, WhatsApp and Google Ads.',
-    howTo:['Paste your text in the box','See character count update live','Check platform compatibility below'],
-    benefits:['Real-time counting','Social media limits','Platform-wise breakdown'],
-    faqs:[{q:'What platforms are supported?',a:'Twitter/X, Instagram, Facebook, SMS, WhatsApp, Google Ads.'},{q:'Does it count emojis?',a:'Yes, emojis are counted as characters.'}],
-    related:['word-counter','base64','wa-link']},
-
-  {id:'invoice', slug:'invoice', name:'Invoice Generator', icon:'🧾', desc:'Create professional GST invoices and download as HTML.', tag:'new', color:'rgba(248,113,113,.12)', border:'rgba(248,113,113,.25)',
-    metaTitle:'Free Invoice Generator Online India', metaDesc:'Create GST invoices free. Download as PDF. No sign up needed.',
-    seoText:'Generate professional invoices with GST for free. Add items, calculate totals and download instantly.',
-    howTo:['Fill business and client details','Add line items with quantity and price','Click Generate and download'],
-    benefits:['GST calculation included','Professional design','Print as PDF'],
-    faqs:[{q:'Can I use this commercially?',a:'Yes, fully free for business use.'},{q:'How do I get PDF?',a:'Open the downloaded HTML file and use Ctrl+P to print as PDF.'}],
-    related:['gst-calc','emi-calc','loan-calc']},
-
-  {id:'gst-calc', slug:'gst-calc', name:'GST Calculator', icon:'🏦', desc:'Calculate GST inclusive and exclusive amounts.', tag:'hot', color:'rgba(52,211,153,.1)', border:'rgba(52,211,153,.25)',
-    metaTitle:'GST Calculator India - Free Online', metaDesc:'Calculate GST inclusive and exclusive. CGST, SGST, IGST breakdown. Free.',
-    seoText:'Calculate GST for your products and services. Supports all GST rates with CGST, SGST and IGST breakdown.',
-    howTo:['Enter the amount','Select GST rate (5%, 12%, 18%, 28%)','Choose inclusive or exclusive','Click Calculate'],
-    benefits:['All GST rates','CGST/SGST/IGST split','Inclusive & exclusive'],
-    faqs:[{q:'What rates are supported?',a:'5%, 12%, 18%, 28% and custom rates.'},{q:'What is inclusive GST?',a:'Amount already includes GST. Tool extracts the GST portion.'}],
-    related:['emi-calc','loan-calc','invoice']},
-
-  {id:'loan-calc', slug:'loan-calc', name:'Loan Calculator', icon:'💳', desc:'Full loan amortization schedule with monthly breakdown.', tag:'hot', color:'rgba(124,108,252,.12)', border:'rgba(124,108,252,.28)',
-    metaTitle:'Loan Calculator - Amortization Schedule Free', metaDesc:'Calculate loan EMI with full amortization schedule. Free.',
-    seoText:'Calculate your loan EMI and see full amortization schedule month by month. Home loan, car loan, personal loan.',
-    howTo:['Enter loan amount and interest rate','Set tenure in years or months','Click Calculate to see full schedule'],
-    benefits:['Full amortization table','Month-by-month breakdown','Supports years & months'],
-    faqs:[{q:'What is amortization?',a:'Amortization shows how each payment is split between principal and interest.'},{q:'Can I use it for home loan?',a:'Yes, works for all types of loans.'}],
-    related:['emi-calc','gst-calc','invoice']},
-
-  {id:'yt-thumb', slug:'yt-thumb', name:'YouTube Thumbnail', icon:'▶️', desc:'Download YouTube video thumbnails in all qualities.', tag:'new', color:'rgba(248,113,113,.12)', border:'rgba(248,113,113,.25)',
-    metaTitle:'YouTube Thumbnail Downloader Free', metaDesc:'Download YouTube thumbnails in HD, HQ, MQ quality. Free.',
-    seoText:'Download YouTube video thumbnails in multiple resolutions. Perfect for content creators and marketers.',
-    howTo:['Paste YouTube video URL','Click Get Thumbnails','Download in your preferred quality'],
-    benefits:['Multiple resolutions','Instant preview','No login needed'],
-    faqs:[{q:'What resolutions are available?',a:'Max (1280x720), HQ (480x360), MQ (320x180), SD (120x90).'},{q:'Are all thumbnails downloadable?',a:'Yes, if they are publicly available on YouTube.'}],
-    related:['img-compress','jpg-to-png','png-to-jpg']}
-];
-
-/* ===== NAVIGATION ===== */
-window.currentToolSlug = '';
-
-function navigateTo(e, toolId){
-  if(e) e.preventDefault();
-  const tool = TOOLS.find(t => t.id === toolId);
-  if(!tool) return;
-  window.currentToolSlug = tool.slug;
-  document.getElementById('home-view').style.display = 'none';
-  document.getElementById('tool-view').style.display = 'block';
-  document.getElementById('tv-bc-name').textContent = tool.name;
-  document.title = tool.metaTitle + ' | NestToolz';
-  document.getElementById('tool-content').innerHTML = buildToolPage(tool);
-  window.scrollTo(0, 0);
-  setTimeout(()=>{
-    if(tool.id === 'qr-gen') generateQR();
-    if(tool.id === 'pass-gen') genPass();
-    if(tool.id === 'word-counter') countWords();
-    if(tool.id === 'char-counter') countChars();
-  }, 100);
+/* ═══ IMAGE PREVIEW ═══ */
+function previewOriginal(){
+  const file = document.getElementById('img-file').files[0];
+  if(!file) return;
+  const wrap = document.getElementById('img-preview-wrap');
+  const preview = document.getElementById('img-preview');
+  const origSize = document.getElementById('img-orig-size');
+  preview.src = URL.createObjectURL(file);
+  wrap.style.display = 'block';
+  origSize.textContent = 'Original size: ' + (file.size/1024).toFixed(1) + ' KB  |  Type: ' + file.type;
 }
 
-function showHome(){
-  document.getElementById('home-view').style.display = 'block';
-  document.getElementById('tool-view').style.display = 'none';
-  document.title = 'NestToolz - Free Online Tools';
-  window.currentToolSlug = '';
-  window.scrollTo(0, 0);
+/* ═══ EMI CALCULATOR ═══ */
+function calcEMI(){
+  const P = parseFloat(document.getElementById('emi-amount')?.value)||0;
+  const annualRate = parseFloat(document.getElementById('emi-rate')?.value)||0;
+  const months = parseFloat(document.getElementById('emi-months')?.value)||0;
+  if(P<=0||annualRate<=0||months<=0){showToast('⚠️ Please fill all fields!');return;}
+  const r = annualRate/(12*100);
+  const emi = P*r*Math.pow(1+r,months)/(Math.pow(1+r,months)-1);
+  const totalPay = emi*months;
+  const totalInt = totalPay-P;
+  const fmt = v=>'₹'+Math.round(v).toLocaleString('en-IN');
+  const res = document.getElementById('emi-result');
+  res.innerHTML=`<strong>📊 EMI Breakdown:</strong><br/><br/>
+    💸 <strong>Monthly EMI:</strong> <span style="color:var(--p2);font-size:1.15rem;font-weight:800">${fmt(emi)}</span><br/>
+    💰 <strong>Principal Amount:</strong> ${fmt(P)}<br/>
+    📈 <strong>Total Interest:</strong> <span style="color:var(--r)">${fmt(totalInt)}</span><br/>
+    🏦 <strong>Total Payment:</strong> <span style="color:var(--g)">${fmt(totalPay)}</span><br/>
+    📅 <strong>Tenure:</strong> ${months} months (${(months/12).toFixed(1)} years)`;
+  res.classList.add('show');
 }
 
-/* ===== BUILD TOOL PAGE ===== */
-function buildToolPage(tool){
-  const relatedHTML = tool.related ? `
-    <div class="tp-seo-card" style="margin-top:0">
-      <div class="tp-related">
-        <h3>🔗 Related Tools</h3>
-        <div class="tp-rel-grid">
-          ${tool.related.map(rid=>{
-            const rt = TOOLS.find(t=>t.id===rid);
-            if(!rt) return '';
-            return '<div class="tp-rel-card" onclick="navigateTo(event,\''+rt.id+'\')">'
-              +'<div class="icon">'+rt.icon+'</div>'
-              +'<div class="name">'+rt.name+'</div>'
-              +'</div>';
-          }).join('')}
-        </div>
-      </div>
-    </div>` : '';
-
-  const shareHTML = `
-    <div class="share-bar" id="tool-share-bar" style="margin-top:16px">
-      <button class="share-wa" onclick="shareWA('${tool.slug}')">💬 WhatsApp</button>
-      <button class="share-tw" onclick="shareTW('${tool.slug}')">🐦 Tweet</button>
-      <button class="share-cp" onclick="shareCopy()">🔗 Copy Link</button>
-    </div>`;
-
-  const seoHTML = `
-    <div class="tp-seo-card">
-      <h2>About ${tool.name}</h2>
-      <p>${tool.seoText}</p>
-      <div class="tp-how">
-        <h3>📋 How to Use</h3>
-        <ol>${tool.howTo.map(s=>'<li>'+s+'</li>').join('')}</ol>
-      </div>
-      <div class="tp-benefits">
-        ${tool.benefits.map(b=>'<span class="tp-ben-tag">✅ '+b+'</span>').join('')}
-      </div>
-      <div class="tp-faq" style="margin-top:16px">
-        <h3>❓ FAQ</h3>
-        ${tool.faqs.map(f=>'<details><summary>'+f.q+'</summary><p>'+f.a+'</p></details>').join('')}
-      </div>
-      ${shareHTML}
-    </div>`;
-
-  const toolUI = buildUI(tool);
-  return `
-    <div class="tv-head">
-      <div class="tv-icon" style="background:${tool.color};border:1px solid ${tool.border}">${tool.icon}</div>
-      <div>
-        <h1>${tool.name}</h1>
-        <p>${tool.desc}</p>
-      </div>
-    </div>
-    ${toolUI}
-    ${seoHTML}
-    ${relatedHTML}`;
+/* ═══ PDF MERGE ═══ */
+async function mergePDF(){
+  const files = document.getElementById('pdf-files')?.files;
+  if(!files||files.length<2){showToast('⚠️ Select at least 2 PDF files!');return;}
+  if(files.length>5){showToast('⚠️ Maximum 5 files allowed!');return;}
+  const btn = document.getElementById('merge-btn');
+  btn.disabled=true; btn.textContent='⏳ Merging...';
+  const res = document.getElementById('pdf-result');
+  try{
+    const {PDFDocument} = PDFLib;
+    const merged = await PDFDocument.create();
+    let totalPages=0;
+    const list = document.getElementById('pdf-file-list');
+    list.innerHTML='';
+    for(let i=0;i<files.length;i++){
+      const buf = await files[i].arrayBuffer();
+      const doc = await PDFDocument.load(buf);
+      const pages = await merged.copyPages(doc, doc.getPageIndices());
+      pages.forEach(p=>merged.addPage(p));
+      totalPages+=pages.length;
+      list.innerHTML+=`<div>✅ ${files[i].name} (${pages.length} page${pages.length>1?'s':''})</div>`;
+    }
+    const bytes = await merged.save();
+    const blob = new Blob([bytes],{type:'application/pdf'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download='merged_nesttoolz.pdf';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    res.innerHTML=`<strong>✅ Merged Successfully!</strong><br/>Total pages: <strong>${totalPages}</strong><br/>Files merged: <strong>${files.length}</strong><br/><small style="color:var(--tx3)">File downloaded automatically ↑</small>`;
+    res.classList.add('show');
+    showToast('✅ PDFs merged & downloaded!');
+  }catch(e){
+    res.innerHTML=`<strong style="color:var(--r)">❌ Error:</strong> ${e.message}`;
+    res.classList.add('show');
+    showToast('❌ Merge failed!');
+  }
+  btn.disabled=false; btn.textContent='📄 Merge PDFs & Download';
 }
 
-/* ===== BUILD UI ===== */
-function buildUI(tool){
-  switch(tool.id){
+/* ═══ PDF COMPRESS ═══ */
+async function compressPDF(){
+  const file = document.getElementById('pdf-comp-file')?.files[0];
+  if(!file){showToast('⚠️ Please select a PDF file!');return;}
+  const btn = document.getElementById('compress-btn');
+  btn.disabled=true; btn.textContent='⏳ Compressing...';
+  const res = document.getElementById('comp-result');
+  try{
+    const {PDFDocument} = PDFLib;
+    const buf = await file.arrayBuffer();
+    const doc = await PDFDocument.load(buf,{ignoreEncryption:true});
+    const level = document.getElementById('comp-level')?.value||'medium';
+    const opts = {useObjectStreams:true};
+    if(level==='high') opts.addDefaultPage=false;
+    const bytes = await doc.save(opts);
+    const origKB=(file.size/1024).toFixed(1);
+    const newKB=(bytes.byteLength/1024).toFixed(1);
+    const saved=((1-bytes.byteLength/file.size)*100).toFixed(0);
+    const blob=new Blob([bytes],{type:'application/pdf'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=file.name.replace('.pdf','_compressed.pdf');
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    res.innerHTML=`<strong>✅ Compressed!</strong><br/>Original: <strong>${origKB} KB</strong><br/>Compressed: <strong>${newKB} KB</strong><br/>Saved: <strong style="color:var(--g)">${saved}%</strong><br/><small style="color:var(--tx3)">File downloaded automatically ↑</small>`;
+    res.classList.add('show');
+    showToast('✅ PDF compressed & downloaded!');
+  }catch(e){
+    res.innerHTML=`<strong style="color:var(--r)">❌ Error:</strong> ${e.message}`;
+    res.classList.add('show');
+    showToast('❌ Compression failed!');
+  }
+  btn.disabled=false; btn.textContent='🗜️ Compress PDF & Download';
+}
 
-    case 'pdf-merge': return `
-      <div class="tool-card">
-        <h3>📄 Select PDF Files</h3>
-        <div class="fi-row">
-          <label>Select 2-5 PDF files to merge:</label>
-          <input type="file" id="pdf-files" accept=".pdf" multiple/>
-          <div id="pdf-file-list" style="font-size:.8rem;color:var(--tx3)"></div>
-          <button class="cbtn" id="merge-btn" onclick="mergePDF()">📄 Merge PDFs & Download</button>
-          <div class="result-box" id="pdf-result"></div>
-        </div>
-      </div>`;
+/* ═══ IMAGE COMPRESSOR ═══ */
+function compressImage(){
+  const file = document.getElementById('img-file')?.files[0];
+  if(!file){showToast('⚠️ Please select an image!');return;}
+  const quality = parseInt(document.getElementById('img-quality')?.value||'72')/100;
+  const canvas = document.getElementById('img-canvas');
+  const res = document.getElementById('img-result');
+  const img = new Image();
+  img.onload=function(){
+    canvas.width=img.naturalWidth;
+    canvas.height=img.naturalHeight;
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(img,0,0);
+    const isPng = file.type==='image/png';
+    const mimeType = isPng?'image/png':'image/jpeg';
+    canvas.toBlob(blob=>{
+      if(!blob){showToast('❌ Compression failed!');return;}
+      const origKB=(file.size/1024).toFixed(1);
+      const newKB=(blob.size/1024).toFixed(1);
+      const saved=(((file.size-blob.size)/file.size)*100).toFixed(0);
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      const ext=isPng?'png':'jpg';
+      a.href=url; a.download=file.name.replace(/\.[^.]+$/,'')+'_compressed.'+ext;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+      res.innerHTML=`<strong>✅ Compressed!</strong><br/>Original: <strong>${origKB} KB</strong><br/>Compressed: <strong>${newKB} KB</strong><br/>Saved: <strong style="color:var(--g)">${saved}%</strong><br/><small style="color:var(--tx3)">File downloaded automatically ↑</small>`;
+      res.classList.add('show');
+      showToast('✅ Image compressed & downloaded!');
+    }, mimeType, isPng?undefined:quality);
+  };
+  img.src=URL.createObjectURL(file);
+}
 
-    case 'pdf-compress': return `
-      <div class="tool-card">
-        <h3>🗜️ Compress PDF</h3>
-        <div class="fi-row">
-          <label>Select PDF file:</label>
-          <input type="file" id="pdf-comp-file" accept=".pdf"/>
-          <label>Compression Level:</label>
-          <select id="comp-level">
-            <option value="low">Low (better quality)</option>
-            <option value="medium" selected>Medium (balanced)</option>
-            <option value="high">High (smaller size)</option>
-          </select>
-          <button class="cbtn" id="compress-btn" onclick="compressPDF()">🗜️ Compress PDF & Download</button>
-          <div class="result-box" id="comp-result"></div>
-        </div>
-      </div>`;
+/* ═══ QR CODE GENERATOR ═══ */
+let qrInstance=null;
+function generateQR(){
+  const text=document.getElementById('qr-text')?.value||'https://nesttoolz.vercel.app';
+  const size=parseInt(document.getElementById('qr-size')?.value||'256');
+  const color=document.getElementById('qr-color')?.value||'#000000';
+  const container=document.getElementById('qr-container');
+  if(!container)return;
+  container.innerHTML='';
+  try{
+    qrInstance=new QRCode(container,{
+      text:text||'https://nesttoolz.vercel.app',
+      width:size, height:size,
+      colorDark:color, colorLight:'#ffffff',
+      correctLevel:QRCode.CorrectLevel.H
+    });
+  }catch(e){container.innerHTML='<p style="color:var(--r);font-size:.8rem">❌ Error generating QR</p>';}
+}
 
-    case 'img-compress': return `
-      <div class="tool-card">
-        <h3>🖼️ Compress Image</h3>
-        <div class="fi-row">
-          <label>Select JPG or PNG image:</label>
-          <input type="file" id="img-file" accept="image/*" onchange="previewOriginal()"/>
-          <div id="img-preview-wrap" style="display:none;margin:8px 0">
-            <img id="img-preview" style="max-width:100%;max-height:200px;border-radius:10px;border:1px solid var(--border)"/>
-            <div id="img-orig-size" style="font-size:.78rem;color:var(--tx3);margin-top:6px"></div>
-          </div>
-          <label>Quality: <span id="quality-val">72</span>%</label>
-          <input type="range" id="img-quality" min="10" max="100" value="72" oninput="document.getElementById('quality-val').textContent=this.value"/>
-          <canvas id="img-canvas" style="display:none"></canvas>
-          <button class="cbtn" onclick="compressImage()">🗜️ Compress & Download</button>
-          <div class="result-box" id="img-result"></div>
-        </div>
-      </div>`;
+function downloadQR(type){
+  const container=document.getElementById('qr-container');
+  if(!container){showToast('⚠️ Generate QR first!');return;}
+  const canvas=container.querySelector('canvas');
+  const img=container.querySelector('img');
+  let dataUrl='';
+  if(canvas) dataUrl=canvas.toDataURL(type==='jpg'?'image/jpeg':'image/png');
+  else if(img) dataUrl=img.src;
+  else{showToast('⚠️ QR not ready yet!');return;}
+  const a=document.createElement('a');
+  a.href=dataUrl; a.download='qrcode_nesttoolz.'+type;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  showToast('✅ QR Code downloaded!');
+}
 
-    case 'qr-gen': return `
-      <div class="tool-card">
-        <h3>📱 Generate QR Code</h3>
-        <div class="fi-row">
-          <label>Text or URL:</label>
-          <input type="text" id="qr-text" placeholder="https://nesttoolz.vercel.app" value="https://nesttoolz.vercel.app" oninput="generateQR()"/>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div>
-              <label>Size (px):</label>
-              <select id="qr-size" onchange="generateQR()">
-                <option value="128">128 x 128</option>
-                <option value="256" selected>256 x 256</option>
-                <option value="512">512 x 512</option>
-              </select>
-            </div>
-            <div>
-              <label>Color:</label>
-              <input type="color" id="qr-color" value="#000000" oninput="generateQR()"/>
-            </div>
-          </div>
-          <div id="qr-container"></div>
-          <div class="qr-dl-btns">
-            <button class="cbtn-sm" onclick="downloadQR('png')">⬇️ Download PNG</button>
-            <button class="cbtn-sm" onclick="downloadQR('jpg')">⬇️ Download JPG</button>
-          </div>
-        </div>
-      </div>`;
+/* ═══ WORD COUNTER ═══ */
+function countWords(){
+  const text=document.getElementById('wc-text')?.value||'';
+  const words=text.trim()===''?0:text.trim().split(/\s+/).length;
+  const chars=text.length;
+  const sentences=text.trim()===''?0:(text.match(/[^.!?]+[.!?]+/g)||[]).length;
+  const readTime=Math.ceil(words/200);
+  const el_w=document.getElementById('wc-words');
+  const el_c=document.getElementById('wc-chars');
+  const el_s=document.getElementById('wc-sents');
+  const el_t=document.getElementById('wc-time');
+  if(el_w)el_w.textContent=words;
+  if(el_c)el_c.textContent=chars;
+  if(el_s)el_s.textContent=sentences;
+  if(el_t)el_t.textContent=readTime<1?'<1 min':readTime+' min';
+}
 
-    case 'word-counter': return `
-      <div class="tool-card">
-        <h3>📝 Word Counter</h3>
-        <div class="fi-row">
-          <textarea id="wc-text" rows="7" placeholder="Paste or type your text here..." oninput="countWords()" style="resize:vertical"></textarea>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:4px">
-            <div style="text-align:center;background:rgba(124,108,252,.08);border-radius:10px;padding:14px"><div id="wc-words" style="font-size:1.5rem;font-weight:900;color:var(--p2)">0</div><div style="font-size:.7rem;color:var(--tx3)">WORDS</div></div>
-            <div style="text-align:center;background:rgba(52,211,153,.08);border-radius:10px;padding:14px"><div id="wc-chars" style="font-size:1.5rem;font-weight:900;color:var(--g)">0</div><div style="font-size:.7rem;color:var(--tx3)">CHARS</div></div>
-            <div style="text-align:center;background:rgba(244,114,182,.08);border-radius:10px;padding:14px"><div id="wc-sents" style="font-size:1.5rem;font-weight:900;color:var(--pk)">0</div><div style="font-size:.7rem;color:var(--tx3)">SENTENCES</div></div>
-            <div style="text-align:center;background:rgba(251,191,36,.08);border-radius:10px;padding:14px"><div id="wc-time" style="font-size:1.5rem;font-weight:900;color:var(--y)">0</div><div style="font-size:.7rem;color:var(--tx3)">READ TIME</div></div>
-          </div>
-        </div>
-      </div>`;
+/* ═══ TIME AGO HELPER ═══ */
+function timeAgo(ts){
+  const secs = Math.floor((Date.now() - ts) / 1000);
+  if(secs < 5)  return 'just now';
+  if(secs < 60) return secs + 's ago';
+  const mins = Math.floor(secs / 60);
+  if(mins < 60) return mins + ' min ago';
+  const hrs = Math.floor(mins / 60);
+  if(hrs < 24)  return hrs + ' hr ago';
+  return Math.floor(hrs / 24) + 'd ago';
+}
 
-    case 'emi-calc': return `
-      <div class="tool-card">
-        <h3>💰 EMI Calculator</h3>
-        <div class="fi-row">
-          <label>Loan Amount (Rs):</label>
-          <input type="number" id="emi-amount" placeholder="e.g. 500000" min="0"/>
-          <label>Annual Interest Rate (%):</label>
-          <input type="number" id="emi-rate" placeholder="e.g. 8.5" min="0" max="100" step="0.1"/>
-          <label>Tenure (months):</label>
-          <input type="number" id="emi-months" placeholder="e.g. 60" min="1"/>
-          <button class="cbtn" onclick="calcEMI()">💰 Calculate EMI</button>
-          <div class="result-box" id="emi-result"></div>
-        </div>
-      </div>`;
+/* ═══ PASSWORD HISTORY ═══ */
+let passHistory = [];
+let pinnedPasses = new Set();
 
-    case 'pass-gen': return `
-      <div class="tool-card">
-        <h3>🔐 Generate Password</h3>
-        <div class="fi-row">
-          <label>Length: <span id="pass-len-val">16</span> characters</label>
-          <input type="range" id="pass-len" min="6" max="64" value="16" oninput="document.getElementById('pass-len-val').textContent=this.value"/>
-          <div class="pass-opts">
-            <label class="pass-opt"><input type="checkbox" id="pass-upper" checked onchange="genPass()"> A-Z Uppercase</label>
-            <label class="pass-opt"><input type="checkbox" id="pass-lower" checked onchange="genPass()"> a-z Lowercase</label>
-            <label class="pass-opt"><input type="checkbox" id="pass-nums" checked onchange="genPass()"> 0-9 Numbers</label>
-            <label class="pass-opt"><input type="checkbox" id="pass-syms" onchange="genPass()"> !@# Symbols</label>
-          </div>
-          <div class="pass-out-wrap">
-            <span id="pass-copied-badge">Copied!</span>
-            <input type="password" id="pass-output" placeholder="Click Generate..." readonly/>
-            <button id="pass-eye-btn" onclick="togglePassVisibility()">👁️</button>
-          </div>
-          <div class="strength-wrap">
-            <div id="pass-strength">Strength: —</div>
-            <div class="progress-wrap"><div id="pass-strength-bar" class="progress-bar" style="width:0%"></div></div>
-          </div>
-          <label class="auto-copy-row"><input type="checkbox" id="pass-auto-copy"> Auto-copy on generate</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <button class="cbtn" onclick="genPass()">🔐 Generate</button>
-            <button class="cbtn-sm" onclick="copyPass()">📋 Copy</button>
-          </div>
-          <div id="pass-history-panel" class="pass-history-panel" style="display:none">
-            <div class="pass-history-header" onclick="togglePassHistory()">
-              <span>📜 Password History</span>
-              <span id="pass-history-arrow">▼</span>
-            </div>
-            <div id="pass-history-list" style="display:flex;flex-direction:column;gap:6px"></div>
-          </div>
-        </div>
-      </div>`;
+function addToPassHistory(pass){
+  const unpinned = passHistory.filter(p => !p.pinned && p.pass !== pass);
+  const pinned   = passHistory.filter(p => p.pinned);
+  const newEntry = { pass, pinned: false, ts: Date.now() };
+  const maxUnpinned = Math.max(1, 5 - pinned.length);
+  passHistory = [...pinned, newEntry, ...unpinned].slice(0, pinned.length + maxUnpinned);
+  renderPassHistory();
+}
 
-    case 'wa-link': return `
-      <div class="tool-card">
-        <h3>💬 WhatsApp Link Generator</h3>
-        <div class="fi-row">
-          <label>Phone Number (with country code, no +):</label>
-          <input type="tel" id="wa-phone" placeholder="e.g. 919876543210"/>
-          <label>Pre-filled Message (optional):</label>
-          <textarea id="wa-msg" rows="3" placeholder="Hello! I found your contact on NestToolz..." style="resize:vertical"></textarea>
-          <button class="cbtn" onclick="genWALink()">💬 Generate WhatsApp Link</button>
-          <div id="wa-output">
-            <div id="wa-link-wrap"><span id="wa-link-text"></span></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <button class="cbtn" onclick="copyWALink()">📋 Copy Link</button>
-              <button class="cbtn-sm" onclick="window.open(document.getElementById('wa-link-text').textContent,'_blank')">📲 Test Link</button>
-            </div>
-          </div>
-        </div>
-      </div>`;
+function renderPassHistory(){
+  const panel = document.getElementById('pass-history-panel');
+  const list  = document.getElementById('pass-history-list');
+  if(!panel || !list) return;
+  if(!passHistory.length){ panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  const hasUnpinned = passHistory.some(p => !p.pinned);
+  list.innerHTML = passHistory.map((item, i) => `
+    <div style="display:flex;flex-direction:column;gap:4px;padding:7px 8px;border-radius:8px;
+         background:${item.pinned ? 'rgba(251,191,36,.06)' : 'rgba(255,255,255,.03)'};
+         border:1px solid ${item.pinned ? 'rgba(251,191,36,.3)' : 'rgba(120,100,255,.1)'};
+         transition:background .2s,border-color .2s">
+      <div style="display:flex;align-items:center;gap:6px">
+        ${item.pinned ? '<span style="font-size:.75rem;flex-shrink:0" title="Pinned">📌</span>' : ''}
+        <span style="font-family:monospace;font-size:.78rem;color:var(--tx2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${item.pass}</span>
+        <span style="font-size:.68rem;color:var(--tx3);flex-shrink:0;white-space:nowrap">🕐 ${timeAgo(item.ts)}</span>
+      </div>
+      <div style="display:flex;gap:5px;justify-content:flex-end">
+        <button onclick="togglePinPass(${i})" title="${item.pinned ? 'Unpin' : 'Pin to top'}"
+          style="background:${item.pinned ? 'rgba(251,191,36,.15)' : 'rgba(255,255,255,.05)'};
+                 border:1px solid ${item.pinned ? 'rgba(251,191,36,.4)' : 'rgba(255,255,255,.1)'};
+                 color:${item.pinned ? 'var(--y)' : 'var(--tx3)'};
+                 padding:3px 8px;border-radius:6px;font-size:.8rem;cursor:pointer;flex-shrink:0;transition:all .2s">
+          ${item.pinned ? '🔒' : '🔓'}
+        </button>
+        <button onclick="useHistoryPass(${i})" style="background:rgba(124,108,252,.12);border:1px solid rgba(124,108,252,.28);color:var(--p2);padding:3px 10px;border-radius:6px;font-size:.7rem;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">Use</button>
+        <button onclick="copyHistoryPass(${i})" style="background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:var(--g);padding:3px 10px;border-radius:6px;font-size:.7rem;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">Copy</button>
+      </div>
+    </div>`).join('') + (hasUnpinned ? `
+  <div style="margin-top:8px;text-align:right">
+    <button onclick="clearUnpinnedHistory()"
+      style="background:rgba(248,113,113,.08);border:1.5px solid rgba(248,113,113,.25);color:var(--r);
+             padding:5px 14px;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;
+             transition:background .2s,border-color .2s"
+      onmouseover="this.style.background='rgba(248,113,113,.16)';this.style.borderColor='rgba(248,113,113,.5)'"
+      onmouseout="this.style.background='rgba(248,113,113,.08)';this.style.borderColor='rgba(248,113,113,.25)'">
+      🗑️ Clear Unpinned
+    </button>
+  </div>` : '');
+}
 
-    case 'age-calc': return `
-      <div class="tool-card">
-        <h3>🎂 Age Calculator</h3>
-        <div class="fi-row">
-          <label>Date of Birth:</label>
-          <input type="date" id="age-dob"/>
-          <button class="cbtn" onclick="calcAge()">🎂 Calculate Age</button>
-          <div class="result-box" id="age-result"></div>
-          <div id="age-share" style="display:none" class="share-bar">
-            <button class="share-wa" onclick="shareWA('age-calc')">💬 Share on WhatsApp</button>
-            <button class="share-tw" onclick="shareTW('age-calc')">🐦 Tweet</button>
-          </div>
-        </div>
-      </div>`;
+function togglePinPass(idx){
+  if(!passHistory[idx]) return;
+  passHistory[idx].pinned = !passHistory[idx].pinned;
+  passHistory = [
+    ...passHistory.filter(p => p.pinned),
+    ...passHistory.filter(p => !p.pinned)
+  ];
+  renderPassHistory();
+  showToast(passHistory[idx]?.pinned ? '📌 Password pinned to top!' : '🔓 Password unpinned!');
+}
 
-    case 'jpg-to-png': return `
-      <div class="tool-card">
-        <h3>🔄 JPG to PNG Converter</h3>
-        <div class="fi-row">
-          <label>Select JPG file:</label>
-          <input type="file" id="j2p-file" accept=".jpg,.jpeg,image/jpeg" onchange="previewJ2P()"/>
-          <div id="j2p-preview-wrap" style="display:none;margin:8px 0">
-            <img id="j2p-preview" style="max-width:100%;max-height:200px;border-radius:10px;border:1px solid var(--border)"/>
-            <div id="j2p-orig-size" style="font-size:.78rem;color:var(--tx3);margin-top:6px"></div>
-          </div>
-          <canvas id="j2p-canvas" style="display:none"></canvas>
-          <button class="cbtn" onclick="convertJPGtoPNG()">🔄 Convert to PNG & Download</button>
-          <div class="result-box" id="j2p-result"></div>
-        </div>
-      </div>`;
+function clearUnpinnedHistory(){
+  passHistory = passHistory.filter(p => p.pinned);
+  renderPassHistory();
+  showToast('🗑️ Unpinned history cleared!');
+}
 
-    case 'png-to-jpg': return `
-      <div class="tool-card">
-        <h3>🔃 PNG to JPG Converter</h3>
-        <div class="fi-row">
-          <label>Select PNG file:</label>
-          <input type="file" id="p2j-file" accept=".png,image/png" onchange="previewP2J()"/>
-          <div id="p2j-preview-wrap" style="display:none;margin:8px 0">
-            <img id="p2j-preview" style="max-width:100%;max-height:200px;border-radius:10px;border:1px solid var(--border)"/>
-            <div id="p2j-orig-size" style="font-size:.78rem;color:var(--tx3);margin-top:6px"></div>
-          </div>
-          <canvas id="p2j-canvas" style="display:none"></canvas>
-          <label>Output Quality: <span id="p2j-q-val">90</span>%</label>
-          <input type="range" id="p2j-quality" min="10" max="100" value="90" oninput="document.getElementById('p2j-q-val').textContent=this.value"/>
-          <button class="cbtn" onclick="convertPNGtoJPG()">🔃 Convert to JPG & Download</button>
-          <div class="result-box" id="p2j-result"></div>
-        </div>
-      </div>`;
+function togglePassHistory(){
+  const list  = document.getElementById('pass-history-list');
+  const arrow = document.getElementById('pass-history-arrow');
+  if(!list) return;
+  const collapsed = list.style.display === 'none';
+  list.style.display  = collapsed ? 'flex'  : 'none';
+  if(arrow) arrow.style.transform = collapsed ? 'rotate(0deg)' : 'rotate(-90deg)';
+}
 
-    case 'base64': return `
-      <div class="tool-card">
-        <h3>🔤 Base64 Encoder / Decoder</h3>
-        <div class="fi-row">
-          <label>Enter text to encode, or Base64 to decode:</label>
-          <textarea id="b64-input" rows="5" placeholder="Enter plain text to encode OR Base64 string to decode..." style="resize:vertical"></textarea>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <button class="cbtn" onclick="encodeB64()">🔒 Encode to Base64</button>
-            <button class="cbtn-sm" onclick="decodeB64()">🔓 Decode from Base64</button>
-          </div>
-          <div class="result-box" id="b64-result"></div>
-        </div>
-      </div>`;
+function useHistoryPass(idx){
+  const item = passHistory[idx];
+  if(!item) return;
+  const el = document.getElementById('pass-output');
+  if(el) el.value = item.pass;
+  updateStrength(item.pass);
+  showToast('✅ Password restored from history!');
+}
 
-    case 'char-counter': return `
-      <div class="tool-card">
-        <h3>🔢 Character Counter</h3>
-        <div class="fi-row">
-          <textarea id="cc-text" rows="6" placeholder="Paste your text here..." oninput="countChars()" style="resize:vertical"></textarea>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:4px 0">
-            <div style="text-align:center;background:rgba(124,108,252,.08);border-radius:10px;padding:14px"><div id="cc-chars" style="font-size:1.5rem;font-weight:900;color:var(--p2)">0</div><div style="font-size:.7rem;color:var(--tx3)">CHARS</div></div>
-            <div style="text-align:center;background:rgba(52,211,153,.08);border-radius:10px;padding:14px"><div id="cc-words" style="font-size:1.5rem;font-weight:900;color:var(--g)">0</div><div style="font-size:.7rem;color:var(--tx3)">WORDS</div></div>
-            <div style="text-align:center;background:rgba(244,114,182,.08);border-radius:10px;padding:14px"><div id="cc-lines" style="font-size:1.5rem;font-weight:900;color:var(--pk)">0</div><div style="font-size:.7rem;color:var(--tx3)">LINES</div></div>
-          </div>
-          <div id="cc-platforms"></div>
-        </div>
-      </div>`;
+function copyHistoryPass(idx){
+  const item = passHistory[idx];
+  if(!item) return;
+  navigator.clipboard.writeText(item.pass).then(() => showToast('📋 Copied from history!')).catch(() => showToast('❌ Copy failed'));
+}
 
-    case 'invoice': return `
-      <div class="tool-card">
-        <h3>🧾 Invoice Generator</h3>
-        <div class="fi-row">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div><label>Business Name:</label><input type="text" id="inv-biz" placeholder="Your Business Name"/></div>
-            <div><label>Invoice Number:</label><input type="text" id="inv-num" placeholder="INV-001" value="INV-001"/></div>
-            <div><label>Client Name:</label><input type="text" id="inv-client" placeholder="Client Name"/></div>
-            <div><label>Date:</label><input type="date" id="inv-date"/></div>
-            <div><label>Contact/Email:</label><input type="text" id="inv-contact" placeholder="email@example.com"/></div>
-            <div><label>GST Rate (%):</label><input type="number" id="inv-gst" placeholder="18" value="18" min="0" max="28"/></div>
-          </div>
-          <label>Items:</label>
-          <div id="inv-items">
-            <div class="inv-item-row">
-              <input type="text" placeholder="Item description" id="item-desc-0"/>
-              <input type="number" placeholder="Qty" id="item-qty-0" value="1" min="1"/>
-              <input type="number" placeholder="Price (Rs)" id="item-price-0"/>
-              <button onclick="removeInvItem(this)" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--r);padding:8px 12px;border-radius:8px;cursor:pointer">x</button>
-            </div>
-          </div>
-          <button class="cbtn-sm" onclick="addInvItem()" style="margin-bottom:8px">+ Add Item</button>
-          <label>Notes:</label>
-          <textarea id="inv-notes" rows="2" placeholder="Thank you for your business!" style="resize:vertical"></textarea>
-          <button class="cbtn" onclick="generateInvoice()">🧾 Generate & Download Invoice</button>
-          <div class="result-box" id="inv-result"></div>
-        </div>
-      </div>`;
-
-    case 'gst-calc': return `
-      <div class="tool-card">
-        <h3>🏦 GST Calculator</h3>
-        <div class="fi-row">
-          <label>Amount (Rs):</label>
-          <input type="number" id="gst-amount" placeholder="Enter amount" min="0" step="0.01"/>
-          <label>GST Rate (%):</label>
-          <select id="gst-rate">
-            <option value="5">5%</option>
-            <option value="12">12%</option>
-            <option value="18" selected>18%</option>
-            <option value="28">28%</option>
-          </select>
-          <label>Type:</label>
-          <div style="display:flex;gap:16px;flex-wrap:wrap">
-            <label style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--tx2);cursor:pointer">
-              <input type="radio" name="gst-type" value="exclusive" checked style="width:auto;padding:0"> GST Exclusive (add GST to amount)
-            </label>
-            <label style="display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--tx2);cursor:pointer">
-              <input type="radio" name="gst-type" value="inclusive" style="width:auto;padding:0"> GST Inclusive (extract GST from amount)
-            </label>
-          </div>
-          <button class="cbtn" onclick="calcGST()">🏦 Calculate GST</button>
-          <div class="result-box" id="gst-result"></div>
-        </div>
-      </div>`;
-
-    case 'loan-calc': return `
-      <div class="tool-card">
-        <h3>💳 Loan Calculator</h3>
-        <div class="fi-row">
-          <label>Loan Amount (Rs):</label>
-          <input type="number" id="loan-amount" placeholder="e.g. 1000000" min="0"/>
-          <label>Annual Interest Rate (%):</label>
-          <input type="number" id="loan-rate" placeholder="e.g. 9" min="0" max="100" step="0.1"/>
-          <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px">
-            <div><label>Tenure:</label><input type="number" id="loan-tenure" placeholder="e.g. 20" min="1"/></div>
-            <div><label>Unit:</label>
-              <select id="loan-unit">
-                <option value="years" selected>Years</option>
-                <option value="months">Months</option>
-              </select>
-            </div>
-          </div>
-          <button class="cbtn" onclick="calcLoan()">💳 Calculate with Schedule</button>
-          <div class="result-box" id="loan-result"></div>
-        </div>
-      </div>`;
-
-    case 'yt-thumb': return `
-      <div class="tool-card">
-        <h3>▶️ YouTube Thumbnail Downloader</h3>
-        <div class="fi-row">
-          <label>YouTube Video URL:</label>
-          <input type="url" id="yt-url" placeholder="https://youtube.com/watch?v=VIDEO_ID"/>
-          <button class="cbtn" onclick="getYTThumb()">▶️ Get Thumbnails</button>
-          <div class="result-box" id="yt-result"></div>
-        </div>
-      </div>`;
-
-    default: return '<div class="tool-card"><p style="color:var(--tx3)">Tool coming soon!</p></div>';
+/* ═══ PASSWORD GENERATOR ═══ */
+function genPass(){
+  const passField = document.getElementById('pass-output');
+  if(passField && !passField._regenListenerAdded){
+    passField.addEventListener('keydown', function(e){
+      if(e.key === ' ' || e.key === 'Enter'){
+        e.preventDefault();
+        genPass();
+      }
+    });
+    passField._regenListenerAdded = true;
+  }
+  const len=parseInt(document.getElementById('pass-len')?.value||'16');
+  const useUpper=document.getElementById('pass-upper')?.checked!==false;
+  const useLower=document.getElementById('pass-lower')?.checked!==false;
+  const useNums=document.getElementById('pass-nums')?.checked!==false;
+  const useSyms=document.getElementById('pass-syms')?.checked||false;
+  let chars='';
+  if(useUpper)chars+='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if(useLower)chars+='abcdefghijklmnopqrstuvwxyz';
+  if(useNums)chars+='0123456789';
+  if(useSyms)chars+='!@#$%^&*()_+-=[]{}|;:,.<>?';
+  if(!chars){showToast('⚠️ Select at least one character type!');return;}
+  const arr=new Uint32Array(len);
+  crypto.getRandomValues(arr);
+  let pass='';
+  for(let i=0;i<len;i++) pass+=chars[arr[i]%chars.length];
+  const el=document.getElementById('pass-output');
+  if(el) el.value=pass;
+  updateStrength(pass);
+  addToPassHistory(pass);
+  const autoCopy=document.getElementById('pass-auto-copy');
+  if(autoCopy?.checked && pass){
+    navigator.clipboard.writeText(pass).then(()=>{
+      showCopiedBadge();
+    }).catch(()=>{
+      if(el){ el.type='text'; el.select(); document.execCommand('copy'); el.type='password'; showCopiedBadge(); }
+    });
   }
 }
-</script>
-<script src="index.js"></script>
-</body>
-</html>
+
+function updateStrength(p){
+  let score=0;
+  if(p.length>=8)score++;
+  if(p.length>=12)score++;
+  if(/[A-Z]/.test(p))score++;
+  if(/[a-z]/.test(p))score++;
+  if(/[0-9]/.test(p))score++;
+  if(/[^a-zA-Z0-9]/.test(p))score++;
+  const labels=['','Very Weak','Weak','Fair','Good','Strong','Very Strong'];
+  const colors=['','var(--r)','var(--r)','var(--y)','var(--y)','var(--g)','var(--g)'];
+  const el=document.getElementById('pass-strength');
+  if(el){el.textContent='Strength: '+labels[score];el.style.color=colors[score];}
+  const bar=document.getElementById('pass-strength-bar');
+  if(bar){bar.style.width=((score/6)*100)+'%';bar.style.background=colors[score];bar.style.transition='width 0.4s ease, background 0.4s ease';}
+}
+
+function copyPass(){
+  const el=document.getElementById('pass-output');
+  if(!el?.value){showToast('⚠️ Generate a password first!');return;}
+  const prevType=el.type;
+  el.type='text';
+  el.select();
+  el.setSelectionRange(0,99999);
+  navigator.clipboard.writeText(el.value).then(()=>{
+    el.type=prevType;
+    showCopiedBadge();
+    showToast('📋 Password copied!');
+  }).catch(()=>{
+    document.execCommand('copy');
+    el.type=prevType;
+    showCopiedBadge();
+    showToast('📋 Password copied!');
+  });
+}
+
+function togglePassVisibility(){
+  const el=document.getElementById('pass-output');
+  const btn=document.getElementById('pass-eye-btn');
+  if(!el)return;
+  const isHidden=el.type==='password';
+  el.type=isHidden?'text':'password';
+  if(btn) btn.textContent=isHidden?'🙈':'👁️';
+}
+
+function showCopiedBadge(){
+  const badge=document.getElementById('pass-copied-badge');
+  if(!badge)return;
+  badge.style.opacity='1';
+  badge.style.transform='translateY(0)';
+  clearTimeout(badge._t);
+  badge._t=setTimeout(()=>{
+    badge.style.opacity='0';
+    badge.style.transform='translateY(-6px)';
+  },1800);
+}
+
+/* ═══ WHATSAPP LINK GENERATOR ═══ */
+function genWALink(){
+  const phone=document.getElementById('wa-phone')?.value?.replace(/\D/g,'')||'';
+  const msg=document.getElementById('wa-msg')?.value||'';
+  if(!phone){showToast('⚠️ Enter a phone number!');return;}
+  const link=`https://wa.me/${phone}${msg?'?text='+encodeURIComponent(msg):''}`;
+  const out=document.getElementById('wa-output');
+  const linkEl=document.getElementById('wa-link-text');
+  if(linkEl) linkEl.textContent=link;
+  if(out) out.classList.add('show');
+}
+
+function copyWALink(){
+  const el=document.getElementById('wa-link-text');
+  if(!el?.textContent){showToast('⚠️ Generate a link first!');return;}
+  navigator.clipboard.writeText(el.textContent).then(()=>showToast('🔗 WhatsApp link copied!')).catch(()=>showToast('❌ Copy failed'));
+}
+
+/* ═══ TOAST ═══ */
+function showToast(msg){
+  const t=document.getElementById('toast');
+  if(!t)return;
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+/* ═══ TOOLS GRID ═══ */
+function renderToolsGrid(filter){
+  const grid=document.getElementById('tools-grid');
+  if(!grid)return;
+  const q=(filter||'').toLowerCase().trim();
+  const filtered=q?TOOLS.filter(t=>t.name.toLowerCase().includes(q)||t.desc.toLowerCase().includes(q)):TOOLS;
+  if(!filtered.length){
+    grid.innerHTML='<div class="no-results">🔍 No tools found for "'+filter+'".<br/>Try "PDF", "QR", "EMI" etc.</div>';
+    return;
+  }
+  grid.innerHTML=filtered.map(t=>`
+    <a class="tc" href="/tools/${t.slug}" onclick="navigateTo(event,'${t.id}')">
+      <div class="tc-top">
+        <div class="tc-icon" style="background:${t.color};border:1px solid ${t.border}">${t.icon}</div>
+        <span class="tc-tag tag-${t.tag}">${t.tag==='hot'?'🔥 Hot':t.tag==='new'?'✨ New':'✅ Free'}</span>
+        <div class="tc-arrow">→</div>
+      </div>
+      <h3>${t.name}</h3>
+      <p>${t.desc}</p>
+    </a>`).join('');
+}
+
+function filterTools(q){
+  renderToolsGrid(q);
+  const navInput=document.getElementById('nav-search-input');
+  const toolInput=document.getElementById('tools-search-input');
+  if(navInput&&document.activeElement!==navInput)navInput.value=q;
+  if(toolInput&&document.activeElement!==toolInput)toolInput.value=q;
+}
+
+/* ═══ MOBILE NAV ═══ */
+function toggleMobileNav(){
+  const nav=document.getElementById('mobile-nav');
+  const ham=document.getElementById('ham-btn');
+  if(!nav)return;
+  nav.classList.toggle('open');
+  if(ham){
+    const spans=ham.querySelectorAll('span');
+    if(nav.classList.contains('open')){
+      spans[0].style.transform='rotate(45deg) translate(5px,5px)';
+      spans[1].style.opacity='0';
+      spans[2].style.transform='rotate(-45deg) translate(5px,-5px)';
+    } else {
+      spans.forEach(s=>{s.style.transform='';s.style.opacity='';});
+    }
+  }
+}
+
+/* ═══ BACKGROUND CANVAS ═══ */
+function initBgCanvas(){
+  const canvas=document.getElementById('bg-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  let W=canvas.width=window.innerWidth;
+  let H=canvas.height=window.innerHeight;
+  const dots=Array.from({length:60},()=>({
+    x:Math.random()*W, y:Math.random()*H,
+    r:Math.random()*1.5+.5,
+    vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3,
+    a:Math.random()*.5+.2
+  }));
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    dots.forEach(d=>{
+      d.x+=d.vx; d.y+=d.vy;
+      if(d.x<0||d.x>W)d.vx*=-1;
+      if(d.y<0||d.y>H)d.vy*=-1;
+      ctx.beginPath();
+      ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(124,108,252,${d.a})`;
+      ctx.fill();
+    });
+    for(let i=0;i<dots.length;i++){
+      for(let j=i+1;j<dots.length;j++){
+        const dx=dots[i].x-dots[j].x;
+        const dy=dots[i].y-dots[j].y;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<120){
+          ctx.beginPath();
+          ctx.moveTo(dots[i].x,dots[i].y);
+          ctx.lineTo(dots[j].x,dots[j].y);
+          ctx.strokeStyle=`rgba(124,108,252,${.06*(1-dist/120)})`;
+          ctx.lineWidth=.5;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+  window.addEventListener('resize',()=>{
+    W=canvas.width=window.innerWidth;
+    H=canvas.height=window.innerHeight;
+  });
+}
+
+/* ═══ HERO 3D CANVAS ═══ */
+function initHero3D(){
+  const canvas=document.getElementById('hero3d');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  canvas.width=canvas.offsetWidth||500;
+  canvas.height=canvas.offsetHeight||480;
+  const W=canvas.width, H=canvas.height;
+  const icons=['📄','🖼️','📱','💰','🔐','📝','🔗','🔤','🔄','🎂','🔢','🔡','🧾','🏦','▶️'];
+  const cards=icons.map((ic,i)=>({
+    icon:ic,
+    x:W/2+(Math.cos(i/icons.length*Math.PI*2)*W*.35),
+    y:H/2+(Math.sin(i/icons.length*Math.PI*2)*H*.35),
+    vx:(Math.random()-.5)*.8,
+    vy:(Math.random()-.5)*.8,
+    size:36+Math.random()*16,
+    a:0
+  }));
+  let frame=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    frame++;
+    cards.forEach((c,i)=>{
+      c.a=Math.min(1,c.a+.02);
+      const orbit=frame*.008+i*(Math.PI*2/cards.length);
+      c.x=W/2+Math.cos(orbit)*(W*.3)+Math.sin(orbit*.7)*(W*.08);
+      c.y=H/2+Math.sin(orbit)*(H*.28)+Math.cos(orbit*.5)*(H*.06);
+      ctx.save();
+      ctx.globalAlpha=c.a*.85;
+      ctx.shadowColor='rgba(124,108,252,.3)';
+      ctx.shadowBlur=16;
+      ctx.fillStyle='rgba(20,20,40,.85)';
+      const r=10;
+      const bw=c.size+16, bh=c.size+8;
+      ctx.beginPath();
+      ctx.roundRect(c.x-bw/2,c.y-bh/2,bw,bh,r);
+      ctx.fill();
+      ctx.strokeStyle='rgba(124,108,252,.25)';
+      ctx.lineWidth=1;
+      ctx.stroke();
+      ctx.font=c.size+'px serif';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.shadowBlur=0;
+      ctx.fillText(c.icon,c.x,c.y);
+      ctx.restore();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+/* ═══ REVEAL OBSERVER ═══ */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target);}});
+},{threshold:.15});
+
+/* ═══ LIVE TIMESTAMP TICKER ═══ */
+setInterval(()=>{
+  if(passHistory.length && document.getElementById('pass-history-panel')?.style.display !== 'none'){
+    renderPassHistory();
+  }
+}, 30000);
+
+/* ═══ INIT ═══ */
+document.addEventListener('DOMContentLoaded',()=>{
+  renderToolsGrid();
+  initBgCanvas();
+  initHero3D();
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+  const pdfFiles=document.getElementById('pdf-files');
+  if(pdfFiles){
+    pdfFiles.addEventListener('change',function(){
+      const list=document.getElementById('pdf-file-list');
+      if(list) list.innerHTML=Array.from(this.files).map(f=>`<div>📄 ${f.name} (${(f.size/1024).toFixed(0)} KB)</div>`).join('');
+    });
+  }
+});
